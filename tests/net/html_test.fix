@@ -1,0 +1,47 @@
+module HtmlTest;
+
+import Minilib.Net.HTML;
+import Minilib.Testing.UnitTest;
+
+test_element_to_html_ok: (HTMLElement, String) -> TestCase;
+test_element_to_html_ok = |(el, expected)| (
+    let testname = "test_element_to_html_ok(" + expected + ")";
+    make_test(testname) $ |_|
+    let actual = el.to_html;
+    assert_equal("eq", expected, actual)
+);
+
+test_element_to_html: TestCase;
+test_element_to_html = (
+    [
+        // an empty element
+        test_element_to_html_ok $ (div_, "<div></div>"),
+        // an element may contain child elements
+        test_element_to_html_ok $ (div_.add(p), "<div><p></p></div>"),
+        // if an element has two or more children, newlines are inserted between children
+        test_element_to_html_ok $ (div_.add(p).add(p), "<div>\n<p></p>\n<p></p>\n</div>"),
+        // an element may contain texts. the texts are escaped.
+        test_element_to_html_ok $ (div_.text("abc&<>\"'"), "<div>abc&amp;&lt;&gt;&quot;&#039;</div>"),
+        // an element may contain child elements and texts
+        test_element_to_html_ok $ (body.add(div_.text("Hello&").add(p.text("World")).text("Foo").add(p.text("Bar"))),
+                                 "<body><div>\nHello&amp;\n<p>World</p>\nFoo\n<p>Bar</p>\n</div></body>"),
+        // attributes are written in the order specified
+        test_element_to_html_ok $ (div_.attr("style", "a").attr("id", "b"), "<div style=\"a\" id=\"b\"></div>"),
+        // if attributes of same name is set more than once, the last one is written
+        test_element_to_html_ok $ (div_.attr("id", "a").attr("id", "b"), "<div id=\"b\"></div>"),
+        // attribute name and value are escaped
+        test_element_to_html_ok $ (div_.attr("A&B", "a&b"), "<div A&amp;B=\"a&amp;b\"></div>"),
+        TestCase::empty
+    ]
+    .run_tests
+);
+
+main: IO ();
+main = (
+    [
+        test_element_to_html,
+        TestCase::empty
+    ]
+    .run_test_driver
+);
+

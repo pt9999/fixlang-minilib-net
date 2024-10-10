@@ -1,0 +1,174 @@
+// HTTP request router.
+// - Mounts a request handler to specific path and method
+// - Finds a request handler from path and method of the HTTP request
+module Minilib.Net.Router;
+
+import HashMap;
+
+import Minilib.Text.StringEx;
+
+
+// `RouterEntry h` represents a map from method name to a request handler.
+// `h` is a type of request handler.
+type RouterEntry h = box struct {
+    map: HashMap String h
+};
+
+namespace RouterEntry {
+    // An empty entry.
+    empty: RouterEntry h;
+    empty = RouterEntry { 
+        map: HashMap::empty(2)
+    };
+
+    // Returns true iff it is an empty entry.
+    is_empty: RouterEntry h -> Bool;
+    is_empty = |entry| entry.@map.get_size == 0;
+
+    // `router_entry.update(method, handler)` sets the handler of the method `method` to `handler`.
+    update: String -> h -> RouterEntry h -> RouterEntry h;
+    update = |method, handler, entry| (
+        entry.mod_map(|map| map.insert(method, handler))
+    );
+
+    // `router_entry.find(method)` finds the handler of the method.
+    find: String -> RouterEntry h -> Option h;
+    find = |method, entry| (
+        entry.@map.find(method)
+    );
+
+    show: [h: ToString] RouterEntry h -> IO ();
+    show = |entry| (
+        println (entry.@map.to_string)
+    );
+}
+
+// `RouterNode h` represents a resource of URI.
+// `h` is a type of request handler.
+type RouterNode h = box struct {
+    directory: HashMap String (RouterNode h),
+    entry: RouterEntry h
+};
+namespace RouterNode {
+    // An empty router node.
+    empty: RouterNode h;
+    empty = RouterNode {
+        directory: HashMap::empty(8),
+        entry: RouterEntry::empty
+    };
+
+    // `RouterNode::create(path, entry_updater)` creates a node.
+    create: Iterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h;
+    create =  |path, entry_updater| (
+        update(path, entry_updater, RouterNode::empty)
+    ); 
+    
+    // `current_node.update(path, entry_updater)` updates the entry of a target node that is reached via `path` from `current_node`.
+    // `path` is a path from `current_node` to the target node. If `path` is an empty iterator, `current_node` becomes the target node.
+    // `entry_updater` is a function that updates the `RouterEntry` of the target node.  
+    update: Iterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h -> RouterNode h;
+    update = |path, entry_updater, node| (
+        if path.is_empty {
+            node.mod_entry(entry_updater)
+        };
+        let (child_name, child_path) = path.advance.as_some;
+        // eval assert (|_| "child name should not be an empty string", child_name != "");
+        node.mod_directory(|dir|
+            let child_node = dir.find(child_name).map_or(
+                create(child_path, entry_updater),
+                |child_node| child_node.update(child_path, entry_updater)
+            );
+            dir.insert(child_name, child_node)
+        )
+    );
+
+    // Finds the entry in the node following the path from the current node.
+    find: Iterator String -> RouterNode h -> Option (RouterEntry h);
+    find = |path, node| (
+        if path.is_empty {
+            some $ node.@entry
+        };
+        let (child_name, child_path) = path.advance.as_some;
+        // eval assert (|_| "child name should not be an empty string", child_name != "");
+        // TODO: support for a pattern like `:id`
+        let child_node = *node.@directory.find(child_name);
+        child_node.find(child_path)
+    );
+
+    show: [h: ToString] String -> RouterNode h -> IO ();
+    show = |prefix, node| (
+        let print_entry = (
+            if node.@entry.is_empty {
+                pure()
+            };   
+            let _ = *print(prefix + ": ");
+            node.@entry.show
+        );
+        let print_directory = (
+            let ends_with: String -> String -> Bool = |e,s| (
+                s.substring(s.get_size - e.get_size, s.get_size) == e
+            );
+            let slash = if prefix.ends_with("/") { "" } else { "/" };
+            node.@directory.to_iter.fold_m(
+                (), |_, (child_name, child_node)|
+                child_node.show(prefix + slash + child_name)
+            )
+        );
+        let _ = *print_entry;
+        let _ = *print_directory;
+        pure()
+    );
+}
+
+// Router is a mapping from a method name and a path to a request handler.
+// `h` is a type of request handler.
+type Router h = box struct {
+    root: RouterNode h
+};
+
+namespace Router {
+
+    // An empty router.
+    empty: Router h;
+    empty = Router {
+        root: RouterNode::empty
+    };
+
+    // `router.insert(method, path, handler)` tells that `method` and  path
+    // should be mapped to this handler.
+    insert: String -> String -> h -> Router h -> Router h;
+    insert = |method, path, handler, router| (
+        let path: Iterator String = path.split_ex("/").filter(|s| s != "");
+        router.mod_root(|root| root.update(path, |entry| entry.update(method, handler)))
+    );
+
+    // `router.find(method, path)` finds the handler that matches `method` and `path`.
+    find: String -> String -> Router h -> Option h;
+    find = |method, path, router| (
+        let path: Iterator String = path.split_ex("/").filter(|s| s != "");
+        let entry = *router.@root.find(path);
+        entry.find(method)
+    );
+}
+
+/*
+//main: IO ();
+//main = (
+    let _ = *eprintln("start");
+    let router: Router String = Router::empty;
+    let router = router.insert("GET", "/", "index");
+    let router = router.insert("GET", "/users", "users");
+    let router = router.insert("POST", "/users", "users-post");
+    let router = router.insert("GET", "/users/1", "users-1");
+    let _ = *router.@root.show("/");
+    let find_handler = |method, path, router| (
+        let opt_handler: Option String = router.find(method, path);
+        println("find: " + method + " " + path + " = " + opt_handler.to_string)
+    );
+    let _ = *find_handler("GET", "/users/", router);
+    let _ = *find_handler("POST", "/users/", router);
+    let _ = *find_handler("GET", "/users/1/", router);
+    let _ = *find_handler("GET", "/notfound/", router);
+    pure()
+);
+*/

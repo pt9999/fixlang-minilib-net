@@ -1,0 +1,137 @@
+// Simple HTTP server.
+// The interface is similar to `express` of Node.js.
+// - Insert a request handler on specific path
+// - Listen for incoming requests
+module Minilib.Net.HttpServer;
+
+import AsyncTask;
+
+import Minilib.IO.FileSystem;
+import Minilib.Net.Request;
+import Minilib.Net.Router;
+import Minilib.Net.Tcp;
+import Minilib.Net.URL;
+
+// The request handler interprets an HTTP request and outputs an HTTP response to `response.@connection`.
+// It returns an HTTP response.
+type RequestHandler = Request -> Response -> IOFail Response;
+
+
+// The worker is responsible for processing a request. Specifically,
+// it reads one request from the socket, processes it, and writes a response to the socket.
+type Worker = unbox struct {
+    app: App
+};
+
+namespace Worker {
+
+    // Creates a worker for the application.
+    make: App -> Worker;
+    make = |app| (
+        Worker {
+            app: app
+        }
+    );
+
+    // `worker.handle(connection, remote_addr)` receives an HTTP request from the socket connection,
+    // then finds the request handler for the request, and call that handler.
+    handle: IOHandle -> String -> Worker -> IO ();
+    handle = |connection, remote_addr, worker| (
+        do {
+            let app = worker.@app;
+            //eval debug_eprintln("parsing request");
+            let request = *Request::parse(connection, remote_addr);
+
+            //eval debug_eprintln("request=" + request.to_string);
+            let response = Response::make(request);
+            //eval debug_eprintln("finding handler");
+            let path = *request.@path.decodeURI.from_result;
+            let handler = app.@router.find(request.@method, path).map_or(
+                _not_found_handler,
+                |handler|
+                //eval debug_eprintln("found handler");
+                handler
+            );
+            //eval debug_eprintln("handling response");
+            let response = *handler(request, response);
+            let _ = *response.end;
+            //eval debug_eprintln("worker finished");
+            pure()
+        }
+        ._finally(|_| close_file(connection))
+        .try(|err| eprintln("ERROR: " + err))
+    );
+
+    _finally: (() -> IO ()) -> IOFail a -> IOFail a;
+    _finally = |f, iof| (
+        let res = *iof.to_result.lift;
+        let _ = *f().lift;
+        if res.is_err { throw $ res.as_err };
+        pure $ res.as_ok
+    );
+
+    _not_found_handler: Request -> Response -> IOFail Response;
+    _not_found_handler = |req, res| (
+        res.status(404).write_str("Not Found")
+    );
+}
+
+// This type represents an application.
+type App = unbox struct {
+    router: Router RequestHandler,      // An HTTP request router
+    backlog: I64                        // Number of backlogs used for `listen()`
+};
+
+namespace App {
+    // `App::make()` creates an empty application.
+    make: () -> App;
+    make = |_| (
+        App {
+            router: Router::empty,
+            backlog: 10
+        }
+    );
+
+    // `app.insert_handler(method, path, handler)` inserts a handler
+    // at `path` for `method`.
+    insert_handler: String -> String -> RequestHandler -> App -> App;
+    insert_handler = |method, path, handler, app| (
+        app.mod_router(|router|
+            router.insert(method, path, handler)
+        )
+    );
+
+    // Alias of `insert_handler`.
+    on: String -> String -> RequestHandler -> App -> App;
+    on = insert_handler;
+
+    // `app.listen(server_host_port)` listens for incoming requests,
+    // and respond to accepted connections.
+    //
+    // This function sets the signal handler for SIGPIPE to SIG_IGN to avoid
+    // abnormal program termination when writing to a closed socket.
+    listen: String -> App -> IOFail App;
+    listen = |server_host_port, app| (
+        let _ = *pure();   // make it lazy
+
+        // Set the signal handler for SIGPIPE to SIG_IGN.
+        let _ = FFI_CALL[Ptr signal(I32, I64), /* SIGPIPE = */ 13_I32, /* SIG_IGN = */ 1_I64];
+
+        let socket = *listen_tcp_server(server_host_port, app.@backlog);
+        let _ = *eprintln ("Listening on " + server_host_port).lift;
+        loop_m(
+            app, |app|
+            let _ = *eprintln ("Accepting connections").lift;
+            let res: (I32, SocketAddress) = *socket.accept_fd;
+            let (accepted_fd, addr) = res;
+            let connection = *fdopen(accepted_fd, "w+");
+            let _ = *eprintln ("Accepted new connection: addr=" + addr.to_string).lift;
+
+            let task = *AsyncIOTask::make(
+                Worker::make(app).handle(connection, addr.to_string)
+            ).lift;
+
+            continue_m $ app
+        )
+    );
+}

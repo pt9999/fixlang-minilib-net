@@ -1,0 +1,233 @@
+// Simple HTML DOM model, as well as escaping/unescaping HTML special characters.
+module Minilib.Net.HTML;
+
+import Character;
+
+import Minilib.Encoding.Xml.XmlHelpers;
+import Minilib.Text.StringEx;
+import Minilib.Text.Unicode;
+import Minilib.Text.Hex;
+
+namespace HTML {
+
+    // An empty HTML document.
+    html: HTMLDocument;
+    html = HTMLDocument::empty;
+
+    // An empty `<head>` element.
+    head: HTMLElement;
+    head = HTMLElement::make("head");
+
+    // An empty `<meta>` element.
+    meta: HTMLElement;
+    meta = HTMLElement::make("meta");
+
+    // An empty `<title>` element.
+    title: HTMLElement;
+    title = HTMLElement::make("title");
+
+    // An empty `<script>` element.
+    script: HTMLElement;
+    script = HTMLElement::make("script");
+
+    // An empty `<body>` element.
+    body: HTMLElement;
+    body = HTMLElement::make("body");
+
+    // An empty `<h1>` element.
+    h1: HTMLElement;
+    h1 = HTMLElement::make("h1");
+
+    // An empty `<h2>` element.
+    h2: HTMLElement;
+    h2 = HTMLElement::make("h2");
+
+    // An empty `<h3>` element.
+    h3: HTMLElement;
+    h3 = HTMLElement::make("h3");
+
+    // An empty `<h4>` element.
+    h4: HTMLElement;
+    h4 = HTMLElement::make("h4");
+
+    // An empty `<h5>` element.
+    h5: HTMLElement;
+    h5 = HTMLElement::make("h5");
+
+    // An empty `<div>` element.
+    div: HTMLElement;
+    div = HTMLElement::make("div");
+
+    // to avoid ambiguity with Std::Div::div
+    div_: HTMLElement;
+    div_ = HTMLElement::make("div");
+
+    // An empty `<span>` element.
+    span: HTMLElement;
+    span = HTMLElement::make("span");
+
+    // An empty `<p>` element.
+    p: HTMLElement;
+    p = HTMLElement::make("p");
+
+    // An empty `<input>` element.
+    input: HTMLElement;
+    input = HTMLElement::make("input");
+
+    // An empty `<button>` element.
+    button: HTMLElement;
+    button = HTMLElement::make("button");
+
+    // An empty `<table>` element.
+    table: HTMLElement;
+    table = HTMLElement::make("table");
+
+    // An empty `<th>` element.
+    th: HTMLElement;
+    th = HTMLElement::make("th");
+
+    // An empty `<tr>` element.
+    tr: HTMLElement;
+    tr = HTMLElement::make("tr");
+
+    // An empty `<td>` element.
+    td: HTMLElement;
+    td = HTMLElement::make("td");
+}
+
+// A type that represents an HTML document.
+type HTMLDocument = unbox struct {
+    html: HTMLElement           // root element, ie. `<html>`
+};
+
+namespace HTMLDocument {
+    // An empty HTML document.
+    empty: HTMLDocument;
+    empty = (
+        HTMLDocument {
+            html: HTMLElement::make("html")
+        }
+    );    
+
+    // Adds a child element to `<html>` element.
+    add: HTMLElement -> HTMLDocument -> HTMLDocument;
+    add = |child, doc| (
+        doc.mod_html(add(child))
+    );
+
+    // Converts the HTML document to HTML string.
+    to_html: HTMLDocument -> String;
+    to_html = |doc| (
+        "<!DOCTYPE html>\n" +
+        doc.@html.to_html
+    );   
+}
+
+// A type that represents an HTML node.
+type HTMLNode = box union {
+    element: HTMLElement,           // HTML element
+    text_node: String               // text node
+};
+
+// A type that represents an HTML element.
+type HTMLElement = unbox struct {
+    tag: String,                    // tag name
+    attrs: Iterator HTMLAttribute,  // attributes (reversed iterator)
+    children: Array HTMLNode        // child nodes
+};
+
+namespace HTMLElement {
+
+    // `HTMLElement::make(tag)` creates an empty element with specified tag name.
+    make: String -> HTMLElement;
+    make = |tag| (
+        HTMLElement {
+            tag: tag,
+            attrs: Iterator::empty,
+            children: Array::empty(0)
+        }
+    );
+
+    // `el.attr(name,value)` adds an attribute to `el`.
+    // If an attribute of same name exists, it will be removed first.
+    // NOTE: validity of attribute names are not checked.
+    attr: String -> String -> HTMLElement -> HTMLElement;
+    attr = |name, value, el| (
+        el.mod_attrs(|attrs|
+            attrs.filter(|(n,v)| n != name)
+                 .push_front((name,value))
+        )
+    );
+
+    // `el.add(child)` adds a child element to `el`.
+    add: HTMLElement -> HTMLElement -> HTMLElement;
+    add = |child, el| (
+        el.mod_children(push_back(element(child)))
+    );
+
+    // `el.text(txt)` adds a text node to `el`.
+    text: String -> HTMLElement -> HTMLElement;
+    text = |txt, el| (
+        el.mod_children(push_back(text_node(txt)))
+    );
+        
+    // `el.to_html` converts the element to HTML string.
+    to_html: HTMLElement -> String;
+    to_html = |el| (
+        el._output_html(Array::empty(100)).to_iter.concat_iter
+    );
+
+    // `el._output_html` output the element as HTML string.
+    _output_html: Array String -> HTMLElement -> Array String;
+    _output_html = |output, el| (
+        let output = output.push_back("<" + el.@tag);
+        let output = el.@attrs.reverse._output_html(output);
+        let output = output.push_back(">");
+        let child_sep = if el.@children.get_size >= 2 { "\n" } else { "" };
+        let output = output.push_back(child_sep);
+        let output = el.@children.to_iter.fold(
+            output, |output, node|
+            if node.is_text_node {
+                output.push_back(escape_html(node.as_text_node))
+                      .push_back(child_sep)
+            } else {
+                node.as_element._output_html(output)
+                    .push_back(child_sep)
+            }
+        );
+        let output = output.push_back("</" + el.@tag + ">");
+        output
+    );
+}
+
+// A type that represents name and value of an attribute.
+type HTMLAttribute = (String, String);
+
+namespace HTMLAttribute {
+    // `attrs._output_html` output the attributes as HTML string.
+    _output_html: Array String -> Iterator HTMLAttribute -> Array String;
+    _output_html = |output, attrs| (
+        attrs.fold(
+            output, |output, (name, value)|
+            output
+            .push_back(" ")
+            .push_back(escape_html(name))
+            .push_back("=\"")
+            .push_back(escape_html(value))
+            .push_back("\"")
+        )
+    );
+}
+
+namespace HTMLHelpers {
+    // Escapes HTML special characters.
+    // eg. `&` -> `&amp;`, `<` -> `&lt;`, `>` -> `&gt;`, `\"` -> `&quot;`, `'` -> `&#039;`
+    escape_html: String -> String;
+    escape_html = XmlHelpers::escape_special;
+
+    // Unescapes HTML special characters.
+    // eg. `&amp;` -> `&`, `&lt;` -> `<`, `&gt;` -> `>`, `&quot;` -> `\"`, `&#039;` -> `'`.
+    // NOTE: Other character references is also converted.
+    unescape_html: String -> String;
+    unescape_html = XmlHelpers::unescape_special;
+}

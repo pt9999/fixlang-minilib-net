@@ -1,0 +1,587 @@
+// IPv4 TCP Socket operations.
+//
+// Features:
+// - IP address, port number
+// - Resolves IP address from hostname
+// - IPv4 Socket address
+// - IPv4 TCP Socket
+//
+// Tested platform: x86_64-linux-gnu, aarch64-linux-gnu
+// WARNING: IPv6 is not supported yet.
+//
+module Minilib.Net.Tcp;
+
+
+get_sub_ex: I64 -> I64 -> Array a -> Array a;
+get_sub_ex = |s, e, array| (
+    let s = max(0, s);
+    let e = max(s, min(array.get_size, e));
+    if s == 0 && e == array.get_size {
+        array
+    };
+    array.get_sub(s,e)
+);
+
+_perror: String -> IO ();
+_perror = |str| (
+    let _ = *pure();    // make it lazy
+    pure $ str.borrow_c_str(|ptr|
+        FFI_CALL[() perror(Ptr), ptr]
+    )
+);
+
+// This type represents IPv4 ip address,
+// eg. 127.0.0.1, 192.168.0.1 etc.
+type IpAddress = unbox struct {
+    addr: Array U8
+};
+
+impl IpAddress: FromString {
+    // Parse host string (eg. "127.0.0.1" -> [127_U8, 0_U8, 0_U8, 1_U8])
+    from_string = |host| (
+        let host_split = host.split(".").to_array;
+        if host_split.get_size != 4 {
+            err $ "Invalid host format: " + host
+        };
+        let addr: Array U8 = Array::fill(4, 0_U8);
+        loop_m (
+            (addr, 0), |(addr, i)|
+            if i >= 4 {
+                break_m $ IpAddress { addr: addr }
+            };
+            let res: Result ErrMsg U8 = from_string(host_split.@(i));
+            if res.is_err {
+                err $ "Invalid host format: " + host + ": " + res.as_err
+            };
+            let addr = addr.set(i, res.as_ok);
+            continue_m $ (addr, i + 1)
+        )
+    );
+}
+
+impl IpAddress: ToString {
+    to_string = |ipaddress| (
+        let addr = ipaddress.@addr;
+        addr.@(0).to_string + "." + addr.@(1).to_string + "." +
+        addr.@(2).to_string + "." + addr.@(3).to_string
+    );
+}
+
+type HostEnt = unbox struct {
+    data: Array U8,
+    buf: Array U8
+};
+
+namespace HostEnt {
+    _hostent_size: I64;
+    _hostent_size = 32;
+
+    // Extract an I32 value, ie. *(u32_t*)(ptr + offset)
+    _get_I32: Ptr -> I64 -> I32;
+    _get_I32 = |ptr, offset| (
+        let a_i32 = Array::fill(1, 0_I32);
+        let _ = a_i32.borrow_ptr(|p_i32|
+            FFI_CALL[Ptr memcpy(Ptr,Ptr,U64), p_i32, ptr.add_offset(offset), 4_U64]
+        );
+        a_i32.@(0)
+    );
+
+    // Extract an Ptr value, ie. *(void**)(ptr + offset)
+    _get_Ptr: Ptr -> I64 -> Ptr;
+    _get_Ptr = |ptr, offset| (
+        let a_ptr = Array::fill(1, nullptr);
+        let _ = a_ptr.borrow_ptr(|p_ptr|
+            FFI_CALL[Ptr memcpy(Ptr,Ptr,U64), p_ptr, ptr.add_offset(offset), 8_U64]
+        );
+        a_ptr.@(0)
+    );
+
+    _gethostbyname_r: String -> IOFail HostEnt;
+    _gethostbyname_r = |host| (
+        let _ = *pure();    // make it lazy
+        let ret: Array U8 = Array::fill(_hostent_size, 0_U8);
+        let buf: Array U8 = Array::fill(1024, 0_U8);
+        let buflen = buf.get_size.to_U64;
+        let result: Array Ptr = Array::fill(1, nullptr);
+        let h_errornop: Array I32 = Array::fill(1, 0_I32);
+        let res = host.borrow_c_str(|p_host|
+            ret.borrow_ptr(|p_ret|
+                buf.borrow_ptr(|p_buf|
+                    result.borrow_ptr(|p_result|
+                        h_errornop.borrow_ptr(|p_h_errornop|
+                            FFI_CALL[I32 gethostbyname_r(Ptr,Ptr,Ptr,U64,Ptr,Ptr),
+                                p_host, p_ret, p_buf, buflen, p_result, p_h_errornop]
+                        )
+                    )
+                )
+            )
+        );
+        if res != 0_I32 {
+            let _ = *_perror("gethostbyname_r").lift;
+            throw $ "gethostbyname_r failed: " + host
+        };
+        let hostent: Ptr = result.@(0);
+        if hostent == nullptr {
+            throw $ "gethostbyname_r failed (hostent == nullptr): " + host
+        };
+        // hostent and ret._get_ptr should be same pointer, but Ptr does not implement Eq.
+        //eval ret.borrow_ptr(|p_ret|
+        //    assert (hostent == p_ret)
+        //);
+        pure $ HostEnt { data: ret, buf: buf }
+    );
+
+    // get `h_length` field of the hostent.
+    get_h_length: HostEnt -> IOFail I64;
+    get_h_length = |hostent| (
+        let _ = *pure();    // make it lazy
+        let h_length = hostent.@data.borrow_ptr(|p_hostent|
+            _get_I32(p_hostent, 20)
+        );
+        pure $ h_length.to_I64
+    );
+
+    // get `h_addr_list[index]` field of the hostent.
+    get_h_addr: I64 -> HostEnt -> IOFail IpAddress;
+    get_h_addr = |index, hostent| (
+        let _ = *pure();    // make it lazy
+        let h_addr_list: Ptr = (                    // char**
+            hostent.@data.borrow_ptr(|p_hostent|
+                _get_Ptr(p_hostent, 24)
+            )
+        );
+        let h_addr: Ptr = (                         // char*
+            _get_Ptr(h_addr_list, 8 * index)
+        );
+
+        let addr = Array::fill(4, 0_U8);
+        let _ = addr.borrow_ptr(|p_addr|
+            FFI_CALL[Ptr memcpy(Ptr,Ptr,U64), p_addr, h_addr, 4_U64]
+        );
+        pure $ IpAddress { addr: addr }
+    );
+}
+
+namespace IpAddress {
+    // Converts a byte array to an `IpAddress`. The length of the byte array must be 4.
+    from_array: Array U8 -> IpAddress;
+    from_array = |addr| (
+        eval assert(|_| "IpAddress::from_array: invalid size: " + addr.get_size.to_string,
+                    addr.get_size == 4);
+        IpAddress { addr: addr }
+    );
+
+    // Resolve a hostname such as "127.0.0.1" or "www.example.com".
+    resolve: String -> IOFail IpAddress;
+    resolve = |host| (
+        let _ = *pure();    // make it lazy
+        // 最初に xxx.xxx.xxx.xxx 形式で解釈する
+        let res: Result ErrMsg IpAddress = from_string(host);
+        if res.is_ok {
+            res.from_result
+        };
+        let hostent = *_gethostbyname_r(host);
+        let h_length = *hostent.get_h_length;
+        if h_length < 1 {
+            throw $ "resolve_host: h_length < 1: " + host
+        };
+        let ipaddress = *hostent.get_h_addr(0);
+        pure $ ipaddress
+    );
+}
+
+// This type reprents IPv4 port number, 0-65535.
+type Port = unbox struct { port: U16 };
+
+impl Port: FromString
+{
+    // Parse port string (eg. "8080" -> 8080_U16)
+    from_string = |port_str| (
+        let res: Result ErrMsg U16 = from_string(port_str);
+        if res.is_err {
+            err $ "Invalid port: " + port_str + ": " + res.as_err
+        };
+        ok $ Port { port: res.as_ok }
+    );
+}
+
+impl Port: ToString
+{
+    to_string = |port| port.@port.to_string;
+}
+
+namespace SocketAddress {
+    _sockaddr_in_size: I64;
+    _sockaddr_in_size = 16;
+
+    // This type represents IPv4 ip address and port number.
+    type SocketAddress = unbox struct {
+        sockaddr_in: Array U8
+    };
+
+    _unsafe_from_array: Array U8 -> SocketAddress;
+    _unsafe_from_array = |array| (
+        SocketAddress { sockaddr_in: array }
+    );
+
+    // Creates a `SocketAddress` from an ip address and a port.
+    make: IpAddress -> Port -> SocketAddress;
+    make = |ipaddress, port| (
+        //eval debug_eprintln("ipaddress="+ipaddress.to_string + " port="+port.to_string);
+        let addr = ipaddress.@addr;
+        let port = port.@port;
+        let port_h: U8 = port.shift_right(8_U16).bit_and(255_U16).to_U8;
+        let port_l: U8 = port.bit_and(255_U16).to_U8;
+        //eval debug_eprintln ("port_h="+port_h.to_string+" port_l="+port_l.to_string);
+        let sockaddr_in = [
+            2_U8, 0_U8, // sin_family = _AF_INET, host byte order
+            port_h, port_l, // sin_port
+            addr.@(0), addr.@(1), addr.@(2), addr.@(3), // sin_addr
+            0_U8, 0_U8, 0_U8, 0_U8,
+            0_U8, 0_U8, 0_U8, 0_U8
+        ];
+        SocketAddress { sockaddr_in: sockaddr_in }
+    );
+
+    // Splits the first argument into a host name and a port number, then resolves the host
+    // name to an ip address, then creates a `SocketAddress` from the ip address and
+    // the port number.
+    //
+    // The first argument is `{host}:{port}`, where `{host}` is an IP Address (eg. `192.168.0.1`),
+    // or a FQDN host name (eg. `www.example.com`), and `{port}` is a port number (eg. `8080`).
+    // If the port number is omitted, the default port number is 80.
+    resolve: String -> IOFail SocketAddress;
+    resolve = |host_port| (
+        let _ = *pure();    // make it lazy
+        let split = host_port.split(":").to_array;
+        if split.get_size <= 0 || split.get_size > 2 {
+            throw $ "Invalid host_port format: " + host_port
+        };
+        let host = split.@(0);
+        let port = if split.get_size == 2 { split.@(1) } else { "80" }; // default HTTP
+        let ipaddress: IpAddress = *IpAddress::resolve(host);
+        let port: Port = *from_string(port).from_result;
+        pure $ SocketAddress::make(ipaddress, port)
+    );
+
+    // Extracts an ip address from the socket address.
+    get_ipaddress: SocketAddress -> IpAddress;
+    get_ipaddress = |socket_address| (
+        let sa = socket_address.@sockaddr_in;
+        IpAddress::from_array(sa.get_sub(4, 8))
+    );
+
+    // Extracts a port number from the socket address.
+    get_port: SocketAddress -> I64;
+    get_port = |socket_address| (
+        let sa = socket_address.@sockaddr_in;
+        let port = sa.@(2).to_U16.shift_left(8_U16).bit_or(sa.@(3).to_U16);
+        port.to_I64
+    );
+}
+
+impl SocketAddress : ToString {
+    to_string = |socket_address| (
+        let addr = socket_address.get_ipaddress;
+        let port = socket_address.get_port;
+        addr.to_string + ":" + port.to_string
+    );
+}
+
+// This type represents an IPv4 socket.
+// It consists of a socket file descriptor.
+// The socket file descripter is closed automatically when Socket is deallocated.
+type Socket = unbox struct {
+    data: Destructor I32
+};
+
+impl Socket: ToString {
+    to_string = |socket| (
+        socket.@data.borrow (|fd| "Socket{fd:" + fd.to_string + "}")
+    );
+}
+
+namespace Socket {
+    // from /usr/include/x86_64-linux-gnu/bits/
+    _AF_INET: I32;
+    _AF_INET = 2_I32;
+
+    _SOCK_STREAM: I32;
+    _SOCK_STREAM = 1_I32;
+
+    // Creates `Socket` from a file descriptor of a socket.
+    // The socket will be automatically closed when `Socket` is deallocated.
+    _unsafe_from_fd: I32 -> Socket;
+    _unsafe_from_fd = |fd| (
+        Socket {
+            data: Destructor::make(fd, |fd|
+                //eval debug_eprintln ("closing socket fd: " + fd.to_string);
+                let res = FFI_CALL[I32 close(I32), fd];
+                if res != 0_I32 {
+                    debug_eprintln("closing socket failed: res=" + res.to_string)
+                } else {
+                    ()
+                }
+            )
+        }
+    );
+
+    // Creates new tcp socket.
+    // The socket will be automatically closed when `Socket` is deallocated.
+    make_tcp_socket: () -> IOFail Socket;
+    make_tcp_socket = |_| (
+        let _ = *pure();    // make it lazy
+        let sockfd = FFI_CALL[I32 socket(I32, I32, I32), _AF_INET, _SOCK_STREAM, 0.to_I32];
+        if sockfd < 0_I32 {
+            let _ = *_perror("socket").lift;
+            throw $ "creating socket failed"
+        };
+        pure $ _unsafe_from_fd(sockfd)
+    );
+
+    // Assigns an IPv4 ip address and a port number to the socket.
+    bind: SocketAddress -> Socket -> IOFail ();
+    bind = |socket_address, socket| (
+        let _ = *pure();    // make it lazy
+        let addr = socket_address.@sockaddr_in;
+        let ret = socket.@data.borrow (|fd|
+            addr.borrow_ptr(|p_addr|
+                FFI_CALL[I32 bind(I32, Ptr, U32), fd, p_addr, addr.get_size.to_U32]
+            )
+        );
+        if ret == -1_I32 {
+            let _ = *_perror("bind").lift;
+            throw $ "bind failed: socket_address=" + socket_address.to_string
+        };
+        pure $ ()
+    );
+
+    // Listens the socket for incoming connection requests.
+    // The first argument (backlog) is the maximum length to which the queue of pending connections for sockfd may grow.
+    listen: I64 -> Socket -> IOFail ();
+    listen = |backlog, socket| (
+        let _ = *pure();    // make it lazy
+        let ret = socket.@data.borrow (|fd|
+            FFI_CALL[I32 listen(I32, I32), fd, backlog.to_I32]
+        );
+        if ret == -1_I32 {
+            let _ = *_perror("listen").lift;
+            throw $ "listen failed"
+        };
+        pure $ ()
+    );
+
+    // Waits for an incoming connection request. If an incoming connection arrives, accept it,
+    // and returns a socket of accepted connection and the remote socket address.
+    accept: Socket -> IOFail (Socket, SocketAddress);
+    accept = |socket| (
+        let (fd, remote_address) = *socket.accept_fd;
+        pure $ (_unsafe_from_fd(fd), remote_address)
+    );
+
+    // Same as `accept()`, except that it returns the accepted socket's file descriptor instead of `Socket`.
+    accept_fd: Socket -> IOFail (I32, SocketAddress);
+    accept_fd = |socket| (
+        let _ = *pure();    // make it lazy
+        let addr: Array U8 = Array::fill(_sockaddr_in_size, 0_U8);
+        let addrlen: Array U32 = Array::fill(1, 0_U32);
+        let addrlen = addrlen.set(0, addr.get_size.to_U32);
+        let fd = socket.@data.borrow(|sockfd|
+            addr.borrow_ptr(|p_addr|
+                addrlen.borrow_ptr(|p_addrlen|
+                    FFI_CALL[I32 accept(I32, Ptr, Ptr), sockfd, p_addr, p_addrlen]
+                )
+            )
+        );
+        if fd == -1_I32 {
+            let _ = *_perror("accept").lift;
+            throw $ "accept failed"
+        };
+        //eval debug_eprintln ("accepted fd="+fd.to_string+" addrlen="+addrlen.@(0).to_string);
+        let remote_address : SocketAddress = (
+            let len = addrlen.@(0).to_I64;
+            let addr = addr.get_sub_ex(0, len);
+            SocketAddress::_unsafe_from_array(addr)
+        );
+        pure $ (fd, remote_address)
+    );
+
+    // Connects to the specified address.
+    connect: SocketAddress -> Socket -> IOFail ();
+    connect = |remote_address, socket| (
+        let _ = *pure();    // make it lazy
+        let addr = remote_address.@sockaddr_in;
+        let addrlen = addr.get_size;
+        let ret = socket.@data.borrow(|fd|
+            addr.borrow_ptr(|p_addr|
+                FFI_CALL[I32 connect(I32, Ptr, U32), fd.to_I32, p_addr, addrlen.to_U32]
+            )
+        );
+        if ret == -1_I32 {
+            let _ = *_perror("connect").lift;
+            throw $ "connect failed"
+        };
+        pure $ ()
+    );
+
+    // Transmits a message to another socket.
+    // May be used only when the socket is in a connected state.
+    // Returns the number of bytes sent.
+    send: Array U8 -> Socket -> IOFail I64;
+    send = |bytes, socket| (
+        let _ = *pure();    // make it lazy
+        let size_to_send = bytes.get_size.to_U64;
+        let flags = 0_I32;
+        let size = socket.@data.borrow(|fd|
+            bytes.borrow_ptr(|p_bytes|
+                FFI_CALL[I64 send(I32, Ptr, U64, I32), fd, p_bytes, size_to_send, flags]
+            )
+        );
+        if size == -1 {
+            let _ = *_perror("send").lift;
+            throw $ "send failed"
+        };
+        pure $ size
+    );
+
+    // Receives messages from a socket.
+    // The first argument is the maximum number of bytes to receive.
+    // If no message are available at the socket, `recv()` waits for a message to arrive.
+    // Returns the number of bytes received.
+    // When the socket has been shutdown, the return value will be 0.
+    recv: I64 -> Socket -> IOFail (Array U8);
+    recv = |size_to_recv, socket| (
+        let _ = *pure();    // make it lazy
+        let bytes = Array::fill(size_to_recv, 0_U8);
+        let flags = 0_I32;
+        let size = socket.@data.borrow(|fd|
+            bytes.borrow_ptr(|p_bytes|
+                FFI_CALL[I64 recv(I32, Ptr, U64, I32), fd, p_bytes, size_to_recv.to_U64, flags]
+            )
+        );
+        if size == -1 {
+            let _ = *_perror("recv").lift;
+            throw $ "recv failed"
+        };
+        let bytes =  bytes.get_sub_ex(0, size);
+        pure $ bytes
+    );
+}
+
+// This type is a structure that wraps a `Socket` and maintains a write buffer, a read buffer and an EOF flag.
+type BufferedSocket = unbox struct {
+    socket: Socket,
+    write_buf: Array U8,
+    read_buf: Array U8,
+    eof: Bool
+};
+
+namespace BufferedSocket {
+    _BUFSIZE: I64;
+    _BUFSIZE = 1024;
+
+    // Makes a `BufferedSocket` from a `Socket`.
+    make: Socket -> BufferedSocket;
+    make = |socket| (
+        BufferedSocket {
+            socket: socket,
+            write_buf: Array::empty(_BUFSIZE),
+            read_buf: Array::empty(_BUFSIZE),
+            eof: false
+        }
+    );
+
+    // Writes a string to the write buffer. The contents of the write buffer is not sent
+    // until the size of the write buffer is equal to or greater than `_BUFSIZE`, or `flush()` is called.
+    write_str: String -> BufferedSocket -> IOFail BufferedSocket;
+    write_str = |str, bufsock| (
+        let bytes = str.get_bytes.pop_back;
+        let bufsock = bufsock.mod_write_buf(|buf| buf.append(bytes));
+        if bufsock.@write_buf.get_size < _BUFSIZE {
+            pure $ bufsock
+        };
+        bufsock.flush
+    );
+
+    // Sends the contents of the writer buffer to the socket and cleans the write buffer.
+    flush: BufferedSocket -> IOFail BufferedSocket;
+    flush = |bufsock| (
+        loop_m(
+            bufsock, |bufsock|
+            let bytes = bufsock.@write_buf;
+            let size_to_write = bytes.get_size;
+            if size_to_write <= 0 {
+                break_m $ bufsock
+            };
+            let socket = bufsock.@socket;
+            let size = *socket.send(bytes);
+            //eval debug_eprintln("size="+size.to_string+ " to="+size_to_write.to_string);
+            let bytes = bytes.get_sub_ex(size, size_to_write);
+            let bufsock = bufsock.set_write_buf(bytes);
+            continue_m $ bufsock
+        )
+    );
+
+    // Reads out a line (ie. a string that ends with a newline) from the read buffer.
+    // When the read buffer does not contain a newline, it will read some bytes upto
+    // _BUFSIZE from the socket, and search for a newline again.
+    // When the connection is closed, the return value may or may not contain a newline.
+    // The next call of `read_line()` returns an empty string, which represents that the connection is closed.
+    read_line: BufferedSocket -> IOFail (String, BufferedSocket);
+    read_line = |bufsock| (
+        loop_m(
+            bufsock, |bufsock|
+            let read_buf = bufsock.@read_buf;
+            if bufsock.@eof {
+                let line: String = read_buf.push_back(0_U8)._unsafe_from_c_str;
+                let bufsock = bufsock.set_read_buf(Array::empty(1));
+                break_m $ (line, bufsock)
+            };
+            let index = read_buf.find_by(|b| b == '\n');
+            if index.is_some {
+                let index = index.as_some;
+                let line = read_buf.get_sub_ex(0, index + 1);
+                let line: String = line.push_back(0_U8)._unsafe_from_c_str;
+                let read_buf = read_buf.get_sub_ex(index + 1, read_buf.get_size);
+                let bufsock = bufsock.set_read_buf(read_buf);
+                break_m $ (line, bufsock)
+            };
+            let socket = bufsock.@socket;
+            let bytes = *socket.recv(_BUFSIZE);
+            let bufsock = bufsock
+                .set_read_buf(read_buf.append(bytes))
+                .set_eof(bytes.get_size == 0);
+            continue_m $ bufsock
+        )
+    );
+}
+
+// Connects to a remote TCP server as a client.
+// The first argument is `{host}:{port}`, where `{host}` is an IP Address (eg. `192.168.0.1`),
+// or a FQDN host name (eg. `www.example.com`), and `{port}` is a port number (eg. `8080`).
+// If the port number is omitted, the default port number is 80.
+connect_to_tcp_server: String  -> IOFail Socket;
+connect_to_tcp_server = |host_port| (
+    let socket_address: SocketAddress = *SocketAddress::resolve(host_port);
+    let socket = *Socket::make_tcp_socket();
+    let _ = *socket.connect(socket_address);
+    pure $ socket
+);
+
+// Listens at the specified address as a server.
+//
+// The first argument is `{host}:{port}`, where `{host}` is an IP Address (typically, `127.0.0.1`),
+// or a FQDN host name (typically, `localhost`), and `{port}` is a port number (eg. `8080`).
+// If the port number is omitted, the default port number is 80.
+//
+// The second argument (`backlog`) is the maximum length to which the queue of pending connections
+// for the socket may grow.
+listen_tcp_server: String -> I64 -> IOFail Socket;
+listen_tcp_server = |server_host_port, backlog| (
+    let socket_address: SocketAddress = *SocketAddress::resolve(server_host_port);
+    let socket: Socket = *Socket::make_tcp_socket();
+    // TODO: set SO_REUSEADDR to reuse TIME_WAIT socket
+    let _ = *socket.bind(socket_address);
+    let _ = *socket.listen(backlog);
+    pure $ socket
+);

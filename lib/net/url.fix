@@ -1,0 +1,209 @@
+// URL and URI parsing
+module Minilib.Net.URL;
+
+import Character;
+
+import Minilib.Text.StringEx;
+import Minilib.Text.Hex;
+
+// A structure that represents an URL.
+type URL = unbox struct {
+    url: String,        // Original URL (eg. "http://127.0.0.1:8080/blogs/search?q=hello%25world&limit=30)
+    scheme: String,     // Scheme       (eg. "http")
+    host: String,       // Host         (eg. "127.0.0.1")
+    port: String,       // Port         (eg. "8080", default: "80")
+    path: String        // Path and query (eg. "/blogs/search?q=hello%25world&limit=30")
+};
+
+// Checks whether two URLs are equal.
+impl URL: Eq {
+    eq = |a, b| (
+        a.@url == b.@url &&
+        a.@scheme == b.@scheme &&
+        a.@host == b.@host &&
+        a.@port == b.@port &&
+        a.@path == b.@path
+    );
+}
+
+// Converts an URL to a string.
+impl URL: ToString {
+    to_string = |u| "URL { url:" + u.@url
+        + ", scheme:" + u.@scheme
+        + ", host:" + u.@host
+        + ", port:" + u.@port
+        + ", path:" + u.@path
+        + "}";
+}
+
+// A namespace for parsing URLs.
+namespace URL {
+    // Parses a string as a URL.
+    // Recognized format of a URL is:
+    //    [scheme://]host[:port][path]
+    // If the scheme part is omitted, a default value ("http") is used as a scheme.
+    // The host and port part should not contain "/".
+    // If the port part is omitted, a default value ("443" if scheme == "https", "80" otherwise)
+    // is used as a port.
+    // The path part should be starts with "/".
+    // If the path part is omitted, a default value ("/") is used as a path.
+    parse: String -> Result ErrMsg URL;
+    parse = |url| (
+        let (scheme, rest) = if url.find("://", 0).is_some {
+            url.split_first("://")
+        } else {
+            ("http", url)
+        };
+        let (host_port, path) = rest.split_first("/");
+        let path = if path == "" { "/" } else { "/" + path };
+        
+        let (host, port) = host_port.split_first(":");
+        let port = if port == "" { 
+            if scheme == "https" { "443" } else { "80" }
+        } else { port };
+        
+        if host == "" {
+            err $ "Invalid host"
+        };
+        let port_res: Result ErrMsg I64 = from_string (port);
+        if port_res.is_err {
+            err $ "Invalid port"
+        };
+        ok $ URL { url:url, scheme:scheme, host:host, port:port, path:path }
+    );
+}
+
+// A namespace for encoding/decoding URIs.
+namespace URI {
+    // Lookup table of characters that consists of `[A-Za-z0-9]`.
+    _alpha_numeric: Array U8;
+    _alpha_numeric = (
+        let char_ranges = [
+            ('A', 'Z'),
+            ('a', 'z'),
+            ('0', '9')
+        ];
+        char_ranges.to_iter.fold(
+            Array::fill(256, 0_U8), |array, (min, max)|
+            Iterator::range(min.to_I64, max.to_I64 + 1).fold(
+                array, |array, c| array.set(c, 1_U8)
+            )
+        )
+    );
+
+    // Lookup table of characters that `encodeURIComponent()` should not escape.
+    _encodeURIComponent_table: Array U8;
+    _encodeURIComponent_table = (
+        "-_.!~*'()".get_bytes.pop_back.to_iter.fold(
+            _alpha_numeric, |array, c|
+            array.set(c.to_I64, 1_U8)
+        )
+    );
+
+    // Lookup table of characters that `encodeURI()` should not escape.
+    _encodeURI_table: Array U8;
+    _encodeURI_table = (
+        ";,/?:@&=+$".get_bytes.pop_back.to_iter.fold(
+            _encodeURIComponent_table, |array, c|
+            array.set(c.to_I64, 1_U8)
+        )
+    );
+
+    // Lookup table of characters that `decodeURIComponent()` should not unescape.
+    _decodeURIComponent_table: Array U8;
+    _decodeURIComponent_table = (
+        Array::fill(256, 0_U8)
+    );
+
+    // Lookup table of characters that `decodeURI()` should not unescape.
+    _decodeURI_table: Array U8;
+    _decodeURI_table = (
+        // preserve_escape_table
+        ";/?:@&=+$,#".get_bytes.pop_back.to_iter.fold(
+            _decodeURIComponent_table, |array, c|
+            array.set(c.to_I64, 1_U8)
+        )    
+    );
+
+    // Encodes a string with a table.
+    _encode_with: Array U8 -> String -> String;
+    _encode_with = |unescaped_table, str| (
+        let input = str.get_bytes.pop_back;
+        input.to_iter.fold(
+            Array::empty(input.get_size * 3), |output, c|
+            if unescaped_table.@(c.to_I64) != 0_U8 {
+                output.push_back(c)
+            };
+            let hi = c.shift_right(4_U8).bit_and(15_U8);
+            let lo = c.bit_and(15_U8);
+            output.push_back('%')
+            .push_back(encode_hex_char(hi).to_upper)
+            .push_back(encode_hex_char(lo).to_upper)
+        )
+        ._unsafe_to_string
+    );
+
+    // Decodes a string with a table.
+    _decode_with: Array U8 -> String -> Result ErrMsg String;
+    _decode_with = |preserve_escape_table, str| (
+        let input = str.get_bytes.pop_back;
+        let input_size = input.get_size;
+        let output = *loop_m(
+            (Array::empty(input_size), 0), |(output, i)|
+            if i >= input_size {
+                break_m $ output
+            };
+            let c = input.@(i);
+            if c != '%' {
+                continue_m $ (output.push_back(c), i + 1)
+            };
+            if i + 2 >= input_size {
+                err $ "Percent sign requires two characters"
+            };
+            let hi = *decode_hex_char(input.@(i + 1));
+            let lo = *decode_hex_char(input.@(i + 2));
+            let c = hi.shift_left(4_U8).bit_or(lo);
+            if preserve_escape_table.@(c.to_I64) != 0_U8 {
+                let output = output.push_back(input.@(i))
+                    .push_back(input.@(i + 1))
+                    .push_back(input.@(i + 2));
+                continue_m $ (output, i + 3)
+            };
+            continue_m $ (output.push_back(c), i + 3)
+        );
+        ok $ output._unsafe_to_string
+    );
+
+    // Same as JavaScript `encodeURI()`.
+    // For details, see [encodeURI()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/encodeURI)
+    // of MDN web docs.
+    encodeURI: String -> String;
+    encodeURI = |str| (
+        str._encode_with(_encodeURI_table)
+    );
+
+    // Same as JavaScript `decodeURI()`.
+    // For details, see [decodeURI()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/decodeURI)
+    // of MDN web docs.
+    decodeURI: String -> Result ErrMsg String;
+    decodeURI = |str| (
+        str._decode_with(_decodeURI_table)
+    );
+
+    // Same as JavaScript `encodeURIComponent()`.
+    // For details, see [encodeURIComponent()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)
+    // of MDN web docs.
+    encodeURIComponent: String -> String;
+    encodeURIComponent = |str| (
+        str._encode_with(_encodeURIComponent_table)
+    );
+
+    // Same as JavaScript `decodeURIComponent()`.
+    // For details, see [decodeURIComponent()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent)
+    // of MDN web docs.
+    decodeURIComponent: String -> Result ErrMsg String;
+    decodeURIComponent = |str| (
+        str._decode_with(_decodeURIComponent_table)
+    );
+}
+

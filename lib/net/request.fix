@@ -1,0 +1,368 @@
+// HTTP request and response.
+// - Parses HTTP request headers and query strings, POST data
+//   (currently only `application/x-www-form-urlencoded` is supported)
+// - Writes response back to client
+module Minilib.Net.Request;
+
+import HashMap;
+
+import Minilib.IO.FileSystem;
+import Minilib.Net.URL;
+import Minilib.Text.StringEx;
+
+//------------------------------------------------------------------------------------
+
+// A type that represents a header. The header is a tuple of field name and field value.
+// Note that the field name is case-insensitive (RFC9112).
+type Header = (String, String);
+
+// A collection of headers.
+type Headers = unbox struct {
+    iter: Iterator Header
+};
+
+impl Headers: ToString {
+    to_string = |headers| (
+        "Headers { " +
+            headers.@iter.reverse.map(|(name, value)| name + ": " + value).join(", ")
+        + " }"
+    );
+}
+
+namespace Headers {
+    // An empty collection of headers.
+    empty: Headers;
+    empty = Headers { iter: Iterator::empty };
+
+    // `headers.set(name, value)` sets the value of the field named `name` to `value`.
+    // The field name is converted to lowercase.
+    // If a field with the same name already exists, it will be removed first.
+    set: String -> String -> Headers -> Headers;
+    set = |name, value, headers| (
+        let name = name.to_lower;
+        headers.mod_iter(|iter|
+            iter.filter(|(n,v)| n != name)
+            .push_front((name, value))
+        )
+    );
+
+    // `headers.append(name, value)` appends a new field `(name, value)` to the current headers collection.
+    // The field name is converted to lowercase.
+    // It will not be removed even if a field with the same name already exists,
+    append: String -> String -> Headers -> Headers;
+    append = |name, value, headers| (
+        let name = name.to_lower;
+        headers.mod_iter(|iter|
+            iter.push_front((name, value))
+        )
+    );
+
+    // `headers.find(name)` finds the field with name `name`.
+    // The field name is converted to lowercase.
+    find: String -> Headers -> Option String;
+    find = |name, headers| (
+        let name = name.to_lower;
+        headers.@iter.loop_iter(
+            none(), |_, (n, v)|
+            if name == n {
+                break $ some(v)
+            };
+            continue $ none()
+        )
+    );
+
+    // `headers.to_iter` returns an iterator of headers.
+    to_iter: Headers -> Iterator (String, String);
+    to_iter = |headers| headers.@iter.reverse;
+}
+
+//------------------------------------------------------------------------------------
+
+// A type that represents an HTTP request.
+type Request = unbox struct {
+    connection: IOHandle,       // An IOHandle of the socket
+    remote_addr: String,        // The remote address, eg. "192.168.0.1:65432"
+    method: String,             // eg. "GET"
+    request_target: String,     // eg. "/blogs/search?q=hello%25world&limit=30"
+    http_version: String,       // eg. "HTTP/1.1"
+    headers: Headers,           // A collection of headers of the request
+    path: String,               // eg. "/blogs/search"
+    query: Array (String, String), // eg. [("q", "hello%world"), ("limit", "30")]
+    body: Array U8              // The body of the request
+};
+
+impl Request: ToString {
+    to_string = |request| (
+        "Request {"
+        + " remote_addr:" + request.@remote_addr
+        + ", method:" + request.@method
+        + ", request_target:" + request.@request_target
+        + ", http_version:" + request.@http_version
+        + ", headers:" + request.@headers.to_string
+        + ", path: " + request.@path.to_string
+        + ", query: " + request.@query.to_string
+        //+ ", body:" + request.@body.to_string
+        + " }"
+    );
+}
+
+namespace Request {
+
+    // `Request::parse(connection, remote_addr)` reads the HTTP request from `connection` and parse it.
+    parse: IOHandle -> String -> IOFail Request;
+    parse = |connection, remote_addr| (
+        let start_line = *connection.read_line;
+        let start_line = start_line.strip_last_newlines;
+        //let _ = *eprintln(start_line).lift;
+        let (method, request_target, http_version) =
+            *_parse_request_line(start_line).from_result;
+        let headers = *loop_m (
+            Headers::empty, |headers|
+            let line = *connection.read_line;
+            let line = line.strip_last_newlines;
+            //let _ = *eprintln(line).lift;
+            if line == "" {
+                break_m $ headers
+            };
+            let (name, value) = *_parse_header(line).from_result;
+            let headers = headers.append(name, value);
+            continue_m $ headers
+        );
+        // parse query string
+        let (path, query) = request_target.split_first("?");
+        let query = *_parse_query_string(query);
+
+        // read body
+        let content_length: String = headers.find("Content-Length").map_or("0", |s|s);
+        let content_length: I64 = *from_string(content_length).from_result;
+        //let _ = *eprintln("reading body: content-length="+content_length.to_string).lift;
+        let body = *read_n_bytes(connection, content_length);
+
+        // parse post data
+        let content_type: String = headers.find("Content-Type").map_or("", |s|s);
+        let query = *if method == "POST" && content_type == "application/x-www-form-urlencoded" {
+            //let _ = *eprintln("body_str='" + body._unsafe_to_string + "'").lift;
+            _parse_query_string(body._unsafe_to_string)
+        } else {
+            pure $ query
+        };
+
+        let request = Request {
+            connection: connection,
+            remote_addr: remote_addr,
+            method: method,
+            request_target: request_target,
+            http_version: http_version,
+            headers: headers,
+            path: path,
+            query: query,
+            body: body
+        };
+        pure $ request
+    );
+
+    _parse_request_line: String -> Result ErrMsg (String, String, String);
+    _parse_request_line = |line| (
+        let fields = line.split_ex(" ").to_array;
+        if fields.get_size != 3 {
+            // TODO: Chrome often sends an empty line that causes "ERROR: Invalid request line: ``"
+            err $ "Invalid request line: `" + line + "`"
+        };
+        ok $ (fields.@(0), fields.@(1), fields.@(2))
+    );
+
+    _parse_header: String -> Result ErrMsg (String, String);
+    _parse_header = |line| (
+        let (field_name, field_value) = line.split_first(":");
+        let field_value = field_value.strip_spaces;
+        ok $ (field_name, field_value)
+    );
+
+    _parse_query_string: String -> IOFail (Array (String, String));
+    _parse_query_string = |query| (
+        query.split_ex("&").fold_m(
+            Array::empty(0), |array, qstr|
+            if qstr == "" { pure $ array };
+            let (name, value) = qstr.split_first("=");
+            let value = *decodeURIComponent(value).from_result;
+            pure $ array.push_back((name, value))
+        )
+    );
+
+    find_query: String -> Request -> Option String;
+    find_query = |name, req| (
+        req.@query.to_iter.filter(|(n,v)| n == name).get_first.map(|(n,v)| v)
+    );
+}
+
+// A type that represents an HTTP response.
+type Response = unbox struct {
+    request: Request,         // HTTP request
+    connection: IOHandle,       // An IOHandle of the socket
+    http_version: String,       // eg. "HTTP/1.1"
+    status: I64,                // HTTP status (eg. 404)
+    reason: String,             // reason phrase (eg. "Not Found")
+    headers: Headers,           // response headers
+    headersSent: Bool           // true iff response headers are sent
+};
+
+namespace Response {
+
+    // `Response::make(request)` creates a basic HTTP response for an HTTP request.
+    make: Request -> Response;
+    make = |req| (
+        let res = Response {
+            request: req,
+            connection: req.@connection,
+            http_version: req.@http_version,
+            status: 0,
+            reason: "",
+            headers: Headers::empty,
+            headersSent: false
+        };
+        res.status(200).content_type("text/plain")
+    );
+
+    // `response.status(code)` sets the HTTP status code. (eg. 404)
+    // It will also set the reason phrase (eg. "Not Found") of the status.
+    status: I64 -> Response -> Response;
+    status = |status, res| (
+        let reason = _STATUS_REASON.find_or(status, "");
+        res.set_status(status).set_reason(reason)
+    );
+
+    // `response.content_type(type)` sets the `Content-Type` header.
+    // You can specify an alias for the content type (e.g. "text", "json").
+    // See the definition of `_CONTENT_TYPE_ALIASES` for a list of available aliases.
+    content_type: String -> Response -> Response;
+    content_type = |type_, res| (
+        let content_type = (
+            if (type_.find("/", 0).is_some) {
+                type_
+            } else {
+                _CONTENT_TYPE_ALIASES.find(type_).map_or(type_, |t|t)
+            }
+        );
+        res.header("Content-Type", content_type)
+    );
+
+    // `response.header(name, value)` sets a response header.
+    header: String -> String -> Response -> Response;
+    header = |name, value, res| (
+        res.mod_headers(|headers| headers.set(name, value))
+    );
+
+    // Sends headers with a status line if they have not already been sent.
+    _send_headers: Response -> IOFail Response;
+    _send_headers = |res| (
+        if res.@headersSent {
+            pure $ res
+        };
+        let connection = res.@connection;
+        let status_line = res.@http_version + " " +
+            res.@status.to_string + " " + res.@reason + "\r\n";
+        let _ = *write_string(connection, status_line);
+        let _ = *res.@headers.to_iter.fold_m(
+            (), |_, header|
+            let (name, value) = header;
+            write_string(connection, name + ": " + value + "\r\n")
+        );
+        let _ = *write_string(connection, "\r\n");
+        let res = res.set_headersSent(true);
+        pure $ res
+    );
+
+    // `response.write_str(str)` sends headers with a status line if they have not already been sent.
+    // Then it sends the specified string.
+    write_str: String -> Response -> IOFail Response;
+    write_str = |str, res| (
+        let res = *res._send_headers;
+        let _ = *write_string(res.@connection, str);
+        pure $ res
+    );
+
+    // `response.write_bytes(bytes)` sends headers with a status line if they have not already been sent.
+    // Then it sends the specified bytes.
+    write_bytes: Array U8 -> Response -> IOFail Response;
+    write_bytes = |bytes, res| (
+        let res = *res._send_headers;
+        let _ = *IO::write_bytes(res.@connection, bytes);
+        pure $ res
+    );
+
+    // Sends headers with a status line if they have not already been sent.
+    // Then flush the connection.
+    end: Response -> IOFail Response;
+    end = |res| (
+        let res = *res._send_headers;
+        let connection = *res.@connection.fflush;
+        pure $ res
+    );
+}
+
+// RFC9110
+// HTTP status and reason-phrase
+_STATUS_REASON: HashMap I64 String;
+_STATUS_REASON = (
+    HashMap::empty(44)
+    .insert(100, "Continue")
+    .insert(101, "Switching Protocols")
+    .insert(200, "OK")
+    .insert(201, "Created")
+    .insert(202, "Accepted")
+    .insert(203, "Non-Authoritative Information")
+    .insert(204, "No Content")
+    .insert(205, "Reset Content")
+    .insert(206, "Partial Content")
+    .insert(300, "Multiple Choices")
+    .insert(301, "Moved Permanently")
+    .insert(302, "Found")
+    .insert(303, "See Other")
+    .insert(304, "Not Modified")
+    .insert(305, "Use Proxy")
+    .insert(307, "Temporary Redirect")
+    .insert(308, "Permanent Redirect")
+    .insert(400, "Bad Request")
+    .insert(401, "Unauthorized")
+    .insert(402, "Payment Required")
+    .insert(403, "Forbidden")
+    .insert(404, "Not Found")
+    .insert(405, "Method Not Allowed")
+    .insert(406, "Not Acceptable")
+    .insert(407, "Proxy Authentication Required")
+    .insert(408, "Request Timeout")
+    .insert(409, "Conflict")
+    .insert(410, "Gone")
+    .insert(411, "Length Required")
+    .insert(412, "Precondition Failed")
+    .insert(413, "Content Too Large")
+    .insert(414, "URI Too Long")
+    .insert(415, "Unsupported Media Type")
+    .insert(416, "Range Not Satisfiable")
+    .insert(417, "Expectation Failed")
+    .insert(421, "Misdirected Request")
+    .insert(422, "Unprocessable Content")
+    .insert(426, "Upgrade Required")
+    .insert(500, "Internal Server Error")
+    .insert(501, "Not Implemented")
+    .insert(502, "Bad Gateway")
+    .insert(503, "Service Unavailable")
+    .insert(504, "Gateway Timeout")
+    .insert(505, "HTTP Version Not Supported")
+);
+
+// Content-Type (MIME type) aliases
+_CONTENT_TYPE_ALIASES: HashMap String String;
+_CONTENT_TYPE_ALIASES = (
+    HashMap::empty(10)
+    .insert("text", "text/plain")
+    .insert("html", "text/html")
+    .insert("css", "text/css")
+    .insert("javascript", "text/javascript")
+    .insert("xml", "text/xml")
+    .insert("json", "application/json")
+    .insert("png", "image/png")
+    .insert("jpeg", "image/jpeg")   // not found in IANA registry
+    .insert("form-data", "multipart/form-data")
+
+);

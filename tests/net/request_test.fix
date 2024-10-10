@@ -1,0 +1,128 @@
+module RequestTest;
+
+import AsyncTask;
+import HashMap;
+
+import Minilib.IO.FileSystem;
+import Minilib.Net.Request;
+import Minilib.Testing.UnitTest;
+
+open_string_reader: String -> IOFail (IOHandle, IOTask ());
+open_string_reader = |str| (
+    let (read_fh, write_fh) = *open_pipe;
+    let writer_task = *AsyncIOTask::make(
+        do {
+            let _ = *write_string(write_fh, str);
+            let _ = *close_file(write_fh).lift;
+            pure()
+        }.try(|err| eprintln("writer_task: "+ err))
+    ).lift;
+    pure $ (read_fh, writer_task)
+);
+
+open_string_writer: () -> IOFail (IOHandle, IOTask String);
+open_string_writer = |_| (
+    let (read_fh, write_fh) = *open_pipe;
+    let reader_task = *AsyncIOTask::make(
+        do {
+            let str = *read_string(read_fh);
+            let _ = *close_file(read_fh).lift;
+            pure $ str
+        }.try(|err|
+            let _ = *eprintln("reader_task: "+ err);
+            pure $ ""
+        )
+    ).lift;
+    pure $ (write_fh, reader_task)
+);
+
+create_simple_request: () -> IOFail Request;
+create_simple_request = |_| (
+    let text = "GET /index.html HTTP/1.1\r\n"
+    + "Accept: text/html\r\n"
+    + "\r\n"
+    ;
+    let (read_fh, writer_task) = *open_string_reader(text);
+    let req = *Request::parse(read_fh, "192.168.10.10:65432");
+    let _ = *close_file(read_fh).lift;
+    let _ = writer_task.get;
+    pure $ req
+);
+
+test_request_simple: TestCase;
+test_request_simple = (
+    let testname = "test_request_simple";
+    make_test(testname) $ |_|
+    let req = *create_simple_request();
+    let _ = *assert_equal("remote_addr", "192.168.10.10:65432", req.@remote_addr);
+    let _ = *assert_equal("method", "GET", req.@method);
+    let _ = *assert_equal("request_target", "/index.html", req.@request_target);
+    let _ = *assert_equal("http_version", "HTTP/1.1", req.@http_version);
+    //let _ = *println(req.@headers.to_string).lift;
+    let _ = *assert_equal("headers[Accept]", some("text/html"), req.@headers.find("Accept"));
+    pure()
+);
+
+type Handler = Response -> IOFail Response;
+
+get_response_output: Request -> Handler -> IOFail String;
+get_response_output = |req, handler| (
+    let (write_fh, reader_task) = *open_string_writer();
+    let req = req.set_connection(write_fh);
+    let res = Response::make(req);
+    let res = *handler(res);
+    let res = *res.end;
+    let _ = *close_file(write_fh).lift;
+    let output = reader_task.get;
+    pure $ output
+);
+
+assert_response_output_equal: Request -> Handler -> String -> IOFail ();
+assert_response_output_equal = |req, handler, expected| (
+    let actual = *get_response_output(req, handler);
+    let _ = *assert_equal("output", expected, actual);
+    pure()
+);
+
+test_response_simple: TestCase;
+test_response_simple = (
+    let testname = "test_response_simple";
+    make_test(testname) $ |_|
+    let req = *create_simple_request();
+    let handler = |res| (
+        res.content_type("html").write_str("<p>Hello world</p>")
+    );
+    assert_response_output_equal(req, handler,
+        "HTTP/1.1 200 OK\r\n"
+        + "content-type: text/html\r\n"
+        + "\r\n"
+        + "<p>Hello world</p>"
+    )
+);
+
+test_response_notfound: TestCase;
+test_response_notfound = (
+    let testname = "test_response_notfound";
+    make_test(testname) $ |_|
+    let req = *create_simple_request();
+    let handler = |res| (
+        pure $ res.status(404)
+    );
+    assert_response_output_equal(req, handler,
+        "HTTP/1.1 404 Not Found\r\n"
+        + "content-type: text/plain\r\n"
+        + "\r\n"
+    )
+);
+
+main: IO ();
+main = (
+    [
+        test_request_simple,
+        test_response_simple,
+        test_response_notfound,
+        TestCase::empty
+    ]
+    .run_test_driver
+);
+

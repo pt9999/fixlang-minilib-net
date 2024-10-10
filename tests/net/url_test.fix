@@ -1,0 +1,181 @@
+module UrlTest;
+
+
+import Minilib.Net.URL;
+import Minilib.Text.StringEx;
+import Minilib.Testing.UnitTest;
+
+test_URL_parse_ok: (String, (String, String, String, String)) -> TestCase;
+test_URL_parse_ok = |(str, (scheme, host, port, path))| (
+    let testname = "test_URL_parse_ok (" + str + ")";
+    make_test(testname) $ |_|
+    let expected = URL {
+        url: str,
+        scheme: scheme,
+        host: host,
+        port: port,
+        path: path
+    };
+    let actual = *URL::parse(str).from_result;
+    let _ = *(assert_equal("eq", expected, actual));
+    pure()
+);
+
+test_URL_parse_ng: (String, ErrMsg) -> TestCase;
+test_URL_parse_ng = |(str, expected)| (
+    let testname = "test_URL_parse_ng (" + str + ")";
+    make_test(testname) $ |_|
+    let res = URL::parse(str);
+    let _ = *(assert_true("err", res.is_err));
+    let _ = *(assert_equal("eq", expected, res.as_err));
+    pure()
+);
+
+test_URL_parse: TestCase;
+test_URL_parse = (
+    [
+        test_URL_parse_ok $ ("http://example.com/aaa/bbb", ("http", "example.com", "80", "/aaa/bbb")),
+        test_URL_parse_ok $ ("https://example.com/", ("https", "example.com", "443", "/")),
+        test_URL_parse_ok $ ("localhost:8080", ("http", "localhost", "8080", "/")),
+        test_URL_parse_ok $ ("127.0.0.1", ("http", "127.0.0.1", "80", "/")),
+        test_URL_parse_ng $ ("", "Invalid host"),
+        test_URL_parse_ng $ ("example.com:abc", "Invalid port"),
+        TestCase::empty
+    ].run_tests
+);
+
+
+test_encodeURI_ok: (String, String) -> TestCase;
+test_encodeURI_ok = |(str, expected)| (
+    let testname = "test_encodeURI_ok (" + str + "," + expected + ")";
+    make_test(testname) $ |_|
+    let actual = encodeURI(str);
+    let _ = *(assert_equal("eq", expected, actual));
+    pure()
+);
+
+test_encodeURI: TestCase;
+test_encodeURI = (
+    [
+        test_encodeURI_ok $ ("", ""),
+        test_encodeURI_ok $ ("09AZaz", "09AZaz"),
+        test_encodeURI_ok $ ("-_.!~*'()", "-_.!~*'()"),
+        test_encodeURI_ok $ (";,/?:@&=+$", ";,/?:@&=+$"),
+        test_encodeURI_ok $ ("/:@[`{", "/:@%5B%60%7B"), // edge case of 0-9, A-Z, a-z
+        test_encodeURI_ok $ ([1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string, "%01%1F%20%7F%80%FF"),
+        TestCase::empty
+    ].run_tests
+);
+
+test_encodeURIComponent_ok: (String, String) -> TestCase;
+test_encodeURIComponent_ok = |(str, expected)| (
+    let testname = "test_encodeURIComponent_ok (" + str + "," + expected + ")";
+    make_test(testname) $ |_|
+    let actual = encodeURIComponent(str);
+    let _ = *(assert_equal("eq", expected, actual));
+    pure()
+);
+
+test_encodeURIComponent: TestCase;
+test_encodeURIComponent = (
+    [
+        test_encodeURIComponent_ok $ ("", ""),
+        test_encodeURIComponent_ok $ ("09AZaz", "09AZaz"),
+        test_encodeURIComponent_ok $ ("-_.!~*'()", "-_.!~*'()"),
+        test_encodeURIComponent_ok $ (";,/?:@&=+$", "%3B%2C%2F%3F%3A%40%26%3D%2B%24"),
+        test_encodeURIComponent_ok $ ("/:@[`{", "%2F%3A%40%5B%60%7B"), // edge case of 0-9, A-Z, a-z
+        test_encodeURIComponent_ok $ ([1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string, "%01%1F%20%7F%80%FF"),
+        TestCase::empty
+    ].run_tests
+);
+
+test_decodeURI_ok: (String, String) -> TestCase;
+test_decodeURI_ok = |(str, expected)| (
+    let testname = "test_decodeURI_ok (" + str + ")";
+    make_test(testname) $ |_|
+    let res = decodeURI(str);
+    let _ = *(assert_true("ok", res.is_ok));
+    let _ = *(assert_equal("eq", expected, res.as_ok));
+    pure()
+);
+
+test_decodeURI_ng: (String, ErrMsg) -> TestCase;
+test_decodeURI_ng = |(str, expected)| (
+    let testname = "test_decodeURI_ng (" + str + ")";
+    make_test(testname) $ |_|
+    let res = decodeURI(str);
+    let _ = *(assert_true("err", res.is_err));
+    let _ = *(assert_equal("eq", expected, res.as_err));
+    pure()
+);
+
+test_decodeURI: TestCase;
+test_decodeURI = (
+    [
+        test_decodeURI_ok $ ("", ""),
+        test_decodeURI_ok $ ("09AZaz", "09AZaz"),
+        test_decodeURI_ok $ ("-_.!~*'()", "-_.!~*'()"),
+        test_decodeURI_ok $ ("%2D%5F%2E%21%7E%2A%27%28%29", "-_.!~*'()"),
+        test_decodeURI_ok $ (";/?:@&=+$,#", ";/?:@&=+$,#"),
+        test_decodeURI_ok $ ("%3B%2F%3F%3A%40%26%3D%2B%24%2C%23", "%3B%2F%3F%3A%40%26%3D%2B%24%2C%23"),       // preserves escaped: ";/?:@&=+$,#"
+        test_decodeURI_ok $ ("/:@%5B%60%7B", "/:@[`{"), // edge case of 0-9, A-Z, a-z
+        test_decodeURI_ok $ ("%01%1F%20%7F%80%FF", [1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string),
+        test_decodeURI_ng $ ("%", "Percent sign requires two characters"),
+        test_decodeURI_ng $ ("%0", "Percent sign requires two characters"),
+        test_decodeURI_ng $ ("%0X", "Not a hexadecimal character: 'X'"),
+        TestCase::empty
+    ].run_tests
+);
+
+
+test_decodeURIComponent_ok: (String, String) -> TestCase;
+test_decodeURIComponent_ok = |(str, expected)| (
+    let testname = "test_decodeURIComponent_ok (" + str + ")";
+    make_test(testname) $ |_|
+    let res = decodeURIComponent(str);
+    let _ = *(assert_true("ok", res.is_ok));
+    let _ = *(assert_equal("eq", expected, res.as_ok));
+    pure()
+);
+
+test_decodeURIComponent_ng: (String, ErrMsg) -> TestCase;
+test_decodeURIComponent_ng = |(str, expected)| (
+    let testname = "test_decodeURIComponent_ng (" + str + ")";
+    make_test(testname) $ |_|
+    let res = decodeURIComponent(str);
+    let _ = *(assert_true("err", res.is_err));
+    let _ = *(assert_equal("eq", expected, res.as_err));
+    pure()
+);
+
+test_decodeURIComponent: TestCase;
+test_decodeURIComponent = (
+    [
+        test_decodeURIComponent_ok $ ("", ""),
+        test_decodeURIComponent_ok $ ("09AZaz", "09AZaz"),
+        test_decodeURIComponent_ok $ ("-_.!~*'()", "-_.!~*'()"),
+        test_decodeURIComponent_ok $ ("%2D%5F%2E%21%7E%2A%27%28%29", "-_.!~*'()"),
+        test_decodeURIComponent_ok $ (";/?:@&=+$,#", ";/?:@&=+$,#"),
+        test_decodeURIComponent_ok $ ("%3B%2F%3F%3A%40%26%3D%2B%24%2C%23", ";/?:@&=+$,#"),       // does not preserve escaped: ";/?:@&=+$,#"
+        test_decodeURIComponent_ok $ ("%2F%3A%40%5B%60%7B", "/:@[`{"), // edge case of 0-9, A-Z, a-z
+        test_decodeURIComponent_ok $ ("%01%1F%20%7F%80%FF", [1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string),
+        test_decodeURIComponent_ng $ ("%", "Percent sign requires two characters"),
+        test_decodeURIComponent_ng $ ("%0", "Percent sign requires two characters"),
+        test_decodeURIComponent_ng $ ("%0X", "Not a hexadecimal character: 'X'"),
+        TestCase::empty
+    ].run_tests
+);
+
+main: IO ();
+main = (
+    [
+        test_URL_parse,
+        test_encodeURI,
+        test_decodeURI,
+        test_encodeURIComponent,
+        test_decodeURIComponent,
+        TestCase::empty
+    ]
+    .run_test_driver
+);
+

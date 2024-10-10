@@ -1,0 +1,44 @@
+[general]
+name = "minilib-net"
+version = "0.1.0"
+
+[build]
+opt_level = "separated"
+files = [
+    "lib/net/html.fix",
+    "lib/net/http_server.fix",
+    "lib/net/request.fix",
+    "lib/net/router.fix",
+    "lib/net/tcp.fix",
+    "lib/net/url.fix",
+]
+
+[build.test]
+opt_level = "separated"
+files = [
+    "tests/test.fix",
+    "tests/net/html_test.fix",
+    "tests/net/request_test.fix",
+    "tests/net/router_test.fix",
+    "tests/net/url_test.fix",
+]
+
+[[dependencies]]
+name = "minilib-common"
+version = "*"
+path = "../fixlang-minilib-common"
+
+[[dependencies]]
+name = "minilib-io"
+version = "*"
+path = "../fixlang-minilib-io"
+
+[[dependencies]]
+name = "minilib-xml"
+version = "*"
+path = "../fixlang-minilib-xml"
+
+[[dependencies]]
+name = "asynctask"
+version = "*"
+git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }

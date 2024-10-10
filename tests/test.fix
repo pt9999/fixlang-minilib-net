@@ -1,0 +1,23 @@
+module Test;
+
+import Minilib.Testing.UnitTest;
+
+import HtmlTest;
+import RequestTest;
+import RouterTest;
+import UrlTest;
+
+testsuite: TestSuite;
+testsuite = [
+    ("HtmlTest", HtmlTest::main),
+    ("RequestTest", RequestTest::main),
+    ("RouterTest", RouterTest::main),
+    ("UrlTest", UrlTest::main),
+];
+
+
+test: IO ();
+test = (
+    testsuite.run
+);
+
