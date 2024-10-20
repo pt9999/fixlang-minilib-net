@@ -7,30 +7,30 @@ path = "../fixlang-minilib-common"
 
 [[dependencies]]
 name = "character"
-version = "0.1.0"
-path = ".fixlang/deps/character_0.1.0"
+version = "0.1.1"
+path = ".fixlang/deps/character_0.1.1"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-character.git"
-rev = "b52fdfe8f6c0d4470e90da0ff0c83d4ffa06b38e"
+rev = "1246b12007cbbb808ec3888a52e96ef762efbe52"
 
 [[dependencies]]
 name = "time"
-version = "0.1.0"
-path = ".fixlang/deps/time_0.1.0"
+version = "0.2.1"
+path = ".fixlang/deps/time_0.2.1"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
-rev = "0e290ebe9a23838298243e72b09e181ff9a99386"
+rev = "4c24189d9827d56de6e7f86dc84201de06bc1908"
 
 [[dependencies]]
 name = "random"
-version = "0.1.0"
-path = ".fixlang/deps/random_0.1.0"
+version = "0.1.1"
+path = ".fixlang/deps/random_0.1.1"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-random.git"
-rev = "757b0f69fc5d508cc4a1b2dea524160f8e666eb9"
+rev = "3fd362bddf4592fef854a2b700836e17c1f5b30b"
 
 [[dependencies]]
 name = "minilib-io"
@@ -49,12 +49,12 @@ path = "../fixlang-minilib-io/../fixlang-minilib-collection"
 
 [[dependencies]]
 name = "hashmap"
-version = "0.1.0"
-path = ".fixlang/deps/hashmap_0.1.0"
+version = "0.1.1"
+path = ".fixlang/deps/hashmap_0.1.1"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-hashmap.git"
-rev = "4d72be1c1c033b69409a1665fdbd7cebbd08d4cf"
+rev = "50e401d24a4a70e4c1296df1f34f52addb7666ff"
 
 [[dependencies]]
 name = "hash"
@@ -67,12 +67,12 @@ rev = "0e05f132ebc9420759a789fcd9e1afa739769c39"
 
 [[dependencies]]
 name = "asynctask"
-version = "0.1.0"
-path = ".fixlang/deps/asynctask_0.1.0"
+version = "0.2.4"
+path = ".fixlang/deps/asynctask_0.2.4"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-asynctask.git"
-rev = "ae1d8a09e732ab10562358fff851b303d5520604"
+rev = "78580c9f6a100023b1892129a1b4b683d2514073"
 
 [[dependencies]]
 name = "minilib-xml"
