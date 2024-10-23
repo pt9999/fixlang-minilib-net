@@ -11,6 +11,7 @@
 //
 module Minilib.Net.Tcp;
 
+import Minilib.Common.Common;
 
 get_sub_ex: I64 -> I64 -> Array a -> Array a;
 get_sub_ex = |s, e, array| (
@@ -166,8 +167,8 @@ namespace IpAddress {
     // Converts a byte array to an `IpAddress`. The length of the byte array must be 4.
     from_array: Array U8 -> IpAddress;
     from_array = |addr| (
-        eval assert(|_| "IpAddress::from_array: invalid size: " + addr.get_size.to_string,
-                    addr.get_size == 4);
+        assert_lazy(|_| "IpAddress::from_array: invalid size: " + addr.get_size.to_string,
+                    addr.get_size == 4) $ |_|
         IpAddress { addr: addr }
     );
 
