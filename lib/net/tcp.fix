@@ -318,11 +318,12 @@ namespace Socket {
             data: Destructor::make(fd, |fd|
                 //eval debug_eprintln ("closing socket fd: " + fd.to_string);
                 let res = FFI_CALL[I32 close(I32), fd];
-                if res != 0_I32 {
+                eval if res != 0_I32 {
                     debug_eprintln("closing socket failed: res=" + res.to_string)
                 } else {
                     ()
-                }
+                };
+                pure $ -1_I32
             )
         }
     );
