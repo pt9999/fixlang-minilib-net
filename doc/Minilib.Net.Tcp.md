@@ -203,11 +203,11 @@ Retrieves the field `buf` from a value of `HostEnt`.
 
 Retrieves the field `data` from a value of `HostEnt`.
 
-### `_get_I32 : Std::Ptr -> Std::I64 -> Std::I32`
+### `_get_I32 : Std::Ptr -> Std::I64 -> Std::IO Std::I32`
 
 Extract an I32 value, ie. *(u32_t*)(ptr + offset)
 
-### `_get_Ptr : Std::Ptr -> Std::I64 -> Std::Ptr`
+### `_get_Ptr : Std::Ptr -> Std::I64 -> Std::IO Std::Ptr`
 
 Extract an Ptr value, ie. *(void**)(ptr + offset)
 
@@ -303,7 +303,7 @@ from /usr/include/x86_64-linux-gnu/bits/
 
 ### `_SOCK_STREAM : Std::I32`
 
-### `_unsafe_from_fd : Std::I32 -> Minilib.Net.Tcp::Socket`
+### `_unsafe_from_fd : Std::I32 -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
 
 Creates `Socket` from a file descriptor of a socket.
 The socket will be automatically closed when `Socket` is deallocated.
@@ -324,6 +324,10 @@ Updates a value of `Socket` by applying a functorial action to field `data`.
 ### `bind : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::Socket -> Std::IO::IOFail ()`
 
 Assigns an IPv4 ip address and a port number to the socket.
+
+### `borrow_fd_io : (Std::I32 -> Std::IO a) -> Minilib.Net.Tcp::Socket -> Std::IO a`
+
+Call an IO action with a file descriptor of a socket.
 
 ### `connect : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::Socket -> Std::IO::IOFail ()`
 

@@ -25,9 +25,9 @@ get_sub_ex = |s, e, array| (
 
 _perror: String -> IO ();
 _perror = |str| (
-    let _ = *pure();    // make it lazy
-    pure $ str.borrow_c_str(|ptr|
-        FFI_CALL[() perror(Ptr), ptr]
+    pure();;    // make it lazy
+    str.borrow_c_str_io(|ptr|
+        FFI_CALL_IO[() perror(Ptr), ptr]
     )
 );
 
@@ -78,47 +78,47 @@ namespace HostEnt {
     _hostent_size = 32;
 
     // Extract an I32 value, ie. *(u32_t*)(ptr + offset)
-    _get_I32: Ptr -> I64 -> I32;
+    _get_I32: Ptr -> I64 -> IO I32;
     _get_I32 = |ptr, offset| (
         let a_i32 = Array::fill(1, 0_I32);
-        let _ = a_i32.borrow_ptr(|p_i32|
-            FFI_CALL[Ptr memcpy(Ptr,Ptr,U64), p_i32, ptr.add_offset(offset), 4_U64]
-        );
-        a_i32.@(0)
+        a_i32.borrow_ptr_io(|p_i32|
+            FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_i32, ptr.add_offset(offset), 4_U64]
+        );;
+        pure $ a_i32.@(0)
     );
 
     // Extract an Ptr value, ie. *(void**)(ptr + offset)
-    _get_Ptr: Ptr -> I64 -> Ptr;
+    _get_Ptr: Ptr -> I64 -> IO Ptr;
     _get_Ptr = |ptr, offset| (
         let a_ptr = Array::fill(1, nullptr);
-        let _ = a_ptr.borrow_ptr(|p_ptr|
-            FFI_CALL[Ptr memcpy(Ptr,Ptr,U64), p_ptr, ptr.add_offset(offset), 8_U64]
-        );
-        a_ptr.@(0)
+        a_ptr.borrow_ptr_io(|p_ptr|
+            FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_ptr, ptr.add_offset(offset), 8_U64]
+        );;
+        pure $ a_ptr.@(0)
     );
 
     _gethostbyname_r: String -> IOFail HostEnt;
     _gethostbyname_r = |host| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         let ret: Array U8 = Array::fill(_hostent_size, 0_U8);
         let buf: Array U8 = Array::fill(1024, 0_U8);
         let buflen = buf.get_size.to_U64;
         let result: Array Ptr = Array::fill(1, nullptr);
         let h_errornop: Array I32 = Array::fill(1, 0_I32);
-        let res = host.borrow_c_str(|p_host|
-            ret.borrow_ptr(|p_ret|
-                buf.borrow_ptr(|p_buf|
-                    result.borrow_ptr(|p_result|
-                        h_errornop.borrow_ptr(|p_h_errornop|
-                            FFI_CALL[I32 gethostbyname_r(Ptr,Ptr,Ptr,U64,Ptr,Ptr),
+        let res = *host.borrow_c_str_io(|p_host|
+            ret.borrow_ptr_io(|p_ret|
+                buf.borrow_ptr_io(|p_buf|
+                    result.borrow_ptr_io(|p_result|
+                        h_errornop.borrow_ptr_io(|p_h_errornop|
+                            FFI_CALL_IO[I32 gethostbyname_r(Ptr,Ptr,Ptr,U64,Ptr,Ptr),
                                 p_host, p_ret, p_buf, buflen, p_result, p_h_errornop]
                         )
                     )
                 )
             )
-        );
+        ).lift;
         if res != 0_I32 {
-            let _ = *_perror("gethostbyname_r").lift;
+            _perror("gethostbyname_r").lift;;
             throw $ "gethostbyname_r failed: " + host
         };
         let hostent: Ptr = result.@(0);
@@ -135,30 +135,30 @@ namespace HostEnt {
     // get `h_length` field of the hostent.
     get_h_length: HostEnt -> IOFail I64;
     get_h_length = |hostent| (
-        let _ = *pure();    // make it lazy
-        let h_length = hostent.@data.borrow_ptr(|p_hostent|
+        pure();;    // make it lazy
+        let h_length = *hostent.@data.borrow_ptr_io(|p_hostent|
             _get_I32(p_hostent, 20)
-        );
+        ).lift;
         pure $ h_length.to_I64
     );
 
     // get `h_addr_list[index]` field of the hostent.
     get_h_addr: I64 -> HostEnt -> IOFail IpAddress;
     get_h_addr = |index, hostent| (
-        let _ = *pure();    // make it lazy
-        let h_addr_list: Ptr = (                    // char**
-            hostent.@data.borrow_ptr(|p_hostent|
+        pure();;    // make it lazy
+        let h_addr_list: Ptr = *(                    // char**
+            hostent.@data.borrow_ptr_io(|p_hostent|
                 _get_Ptr(p_hostent, 24)
             )
-        );
-        let h_addr: Ptr = (                         // char*
+        ).lift;
+        let h_addr: Ptr = *(                         // char*
             _get_Ptr(h_addr_list, 8 * index)
-        );
+        ).lift;
 
         let addr = Array::fill(4, 0_U8);
-        let _ = addr.borrow_ptr(|p_addr|
-            FFI_CALL[Ptr memcpy(Ptr,Ptr,U64), p_addr, h_addr, 4_U64]
-        );
+        addr.borrow_ptr_io(|p_addr|
+            FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_addr, h_addr, 4_U64]
+        ).lift;;
         pure $ IpAddress { addr: addr }
     );
 }
@@ -175,7 +175,7 @@ namespace IpAddress {
     // Resolve a hostname such as "127.0.0.1" or "www.example.com".
     resolve: String -> IOFail IpAddress;
     resolve = |host| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         // 最初に xxx.xxx.xxx.xxx 形式で解釈する
         let res: Result ErrMsg IpAddress = from_string(host);
         if res.is_ok {
@@ -253,7 +253,7 @@ namespace SocketAddress {
     // If the port number is omitted, the default port number is 80.
     resolve: String -> IOFail SocketAddress;
     resolve = |host_port| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         let split = host_port.split(":").to_array;
         if split.get_size <= 0 || split.get_size > 2 {
             throw $ "Invalid host_port format: " + host_port
@@ -312,12 +312,13 @@ namespace Socket {
 
     // Creates `Socket` from a file descriptor of a socket.
     // The socket will be automatically closed when `Socket` is deallocated.
-    _unsafe_from_fd: I32 -> Socket;
+    _unsafe_from_fd: I32 -> IOFail Socket;
     _unsafe_from_fd = |fd| (
-        Socket {
+        //eval debug_eprintln("Socket::_unsafe_from_fd: fd=" + fd.to_string);
+        pure $ Socket {
             data: Destructor::make(fd, |fd|
                 //eval debug_eprintln ("closing socket fd: " + fd.to_string);
-                let res = FFI_CALL[I32 close(I32), fd];
+                let res = *FFI_CALL_IO[I32 close(I32), fd];
                 eval if res != 0_I32 {
                     debug_eprintln("closing socket failed: res=" + res.to_string)
                 } else {
@@ -328,33 +329,40 @@ namespace Socket {
         }
     );
 
+    // Call an IO action with a file descriptor of a socket.
+    borrow_fd_io : (I32 -> IO a) -> Socket -> IO a;
+    borrow_fd_io = |act, sock| IO::from_runner $ |ios| (
+        sock.@data.borrow(|fd| (act(fd).@runner)(ios))
+    );
+
     // Creates new tcp socket.
     // The socket will be automatically closed when `Socket` is deallocated.
     make_tcp_socket: () -> IOFail Socket;
     make_tcp_socket = |_| (
-        let _ = *pure();    // make it lazy
-        let sockfd = FFI_CALL[I32 socket(I32, I32, I32), _AF_INET, _SOCK_STREAM, 0.to_I32];
+        pure();;    // make it lazy
+        let sockfd = *FFI_CALL_IO[I32 socket(I32, I32, I32), _AF_INET, _SOCK_STREAM, 0.to_I32].lift;
         if sockfd < 0_I32 {
-            let _ = *_perror("socket").lift;
+            _perror("socket").lift;;
             throw $ "creating socket failed"
         };
-        pure $ _unsafe_from_fd(sockfd)
+        Socket::_unsafe_from_fd(sockfd)
     );
 
     // Assigns an IPv4 ip address and a port number to the socket.
     bind: SocketAddress -> Socket -> IOFail ();
     bind = |socket_address, socket| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         let addr = socket_address.@sockaddr_in;
-        let ret = socket.@data.borrow (|fd|
+        let ret = *socket.borrow_fd_io(|fd|
             addr.borrow_ptr(|p_addr|
-                FFI_CALL[I32 bind(I32, Ptr, U32), fd, p_addr, addr.get_size.to_U32]
+                FFI_CALL_IO[I32 bind(I32, Ptr, U32), fd, p_addr, addr.get_size.to_U32]
             )
-        );
+        ).lift;
         if ret == -1_I32 {
-            let _ = *_perror("bind").lift;
+            _perror("bind").lift;;
             throw $ "bind failed: socket_address=" + socket_address.to_string
         };
+        //eval debug_eprintln("bind success: socket_address=" + socket_address.to_string);
         pure $ ()
     );
 
@@ -362,14 +370,15 @@ namespace Socket {
     // The first argument (backlog) is the maximum length to which the queue of pending connections for sockfd may grow.
     listen: I64 -> Socket -> IOFail ();
     listen = |backlog, socket| (
-        let _ = *pure();    // make it lazy
-        let ret = socket.@data.borrow (|fd|
-            FFI_CALL[I32 listen(I32, I32), fd, backlog.to_I32]
-        );
+        pure();;    // make it lazy
+        let ret = *socket.borrow_fd_io (|fd|
+            FFI_CALL_IO[I32 listen(I32, I32), fd, backlog.to_I32]
+        ).lift;
         if ret == -1_I32 {
-            let _ = *_perror("listen").lift;
+            _perror("listen").lift;;
             throw $ "listen failed"
         };
+        //eval debug_eprintln("listen success");
         pure $ ()
     );
 
@@ -377,26 +386,27 @@ namespace Socket {
     // and returns a socket of accepted connection and the remote socket address.
     accept: Socket -> IOFail (Socket, SocketAddress);
     accept = |socket| (
-        let (fd, remote_address) = *socket.accept_fd;
-        pure $ (_unsafe_from_fd(fd), remote_address)
+        let (accepted_fd, remote_address) = *socket.accept_fd;
+        let accepted_sock = *_unsafe_from_fd(accepted_fd);
+        pure $ (accepted_sock, remote_address)
     );
 
     // Same as `accept()`, except that it returns the accepted socket's file descriptor instead of `Socket`.
     accept_fd: Socket -> IOFail (I32, SocketAddress);
     accept_fd = |socket| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         let addr: Array U8 = Array::fill(_sockaddr_in_size, 0_U8);
         let addrlen: Array U32 = Array::fill(1, 0_U32);
         let addrlen = addrlen.set(0, addr.get_size.to_U32);
-        let fd = socket.@data.borrow(|sockfd|
-            addr.borrow_ptr(|p_addr|
-                addrlen.borrow_ptr(|p_addrlen|
-                    FFI_CALL[I32 accept(I32, Ptr, Ptr), sockfd, p_addr, p_addrlen]
+        let fd = *socket.borrow_fd_io(|sockfd|
+            addr.borrow_ptr_io(|p_addr|
+                addrlen.borrow_ptr_io(|p_addrlen|
+                    FFI_CALL_IO[I32 accept(I32, Ptr, Ptr), sockfd, p_addr, p_addrlen]
                 )
             )
-        );
+        ).lift;
         if fd == -1_I32 {
-            let _ = *_perror("accept").lift;
+            _perror("accept").lift;;
             throw $ "accept failed"
         };
         //eval debug_eprintln ("accepted fd="+fd.to_string+" addrlen="+addrlen.@(0).to_string);
@@ -411,18 +421,19 @@ namespace Socket {
     // Connects to the specified address.
     connect: SocketAddress -> Socket -> IOFail ();
     connect = |remote_address, socket| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         let addr = remote_address.@sockaddr_in;
         let addrlen = addr.get_size;
-        let ret = socket.@data.borrow(|fd|
-            addr.borrow_ptr(|p_addr|
-                FFI_CALL[I32 connect(I32, Ptr, U32), fd.to_I32, p_addr, addrlen.to_U32]
+        let ret = *socket.borrow_fd_io(|fd|
+            addr.borrow_ptr_io(|p_addr|
+                FFI_CALL_IO[I32 connect(I32, Ptr, U32), fd.to_I32, p_addr, addrlen.to_U32]
             )
-        );
+        ).lift;
         if ret == -1_I32 {
-            let _ = *_perror("connect").lift;
+            _perror("connect").lift;;
             throw $ "connect failed"
         };
+        //eval debug_eprintln("connect success");
         pure $ ()
     );
 
@@ -431,18 +442,20 @@ namespace Socket {
     // Returns the number of bytes sent.
     send: Array U8 -> Socket -> IOFail I64;
     send = |bytes, socket| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         let size_to_send = bytes.get_size.to_U64;
         let flags = 0_I32;
-        let size = socket.@data.borrow(|fd|
-            bytes.borrow_ptr(|p_bytes|
-                FFI_CALL[I64 send(I32, Ptr, U64, I32), fd, p_bytes, size_to_send, flags]
+        let size = *socket.borrow_fd_io(|fd|
+            bytes.borrow_ptr_io(|p_bytes|
+                //eval debug_eprintln("send: fd=" + fd.to_string);
+                FFI_CALL_IO[I64 send(I32, Ptr, U64, I32), fd, p_bytes, size_to_send, flags]
             )
-        );
+        ).lift;
         if size == -1 {
-            let _ = *_perror("send").lift;
+            _perror("send").lift;;
             throw $ "send failed"
         };
+        //eval debug_eprintln("send success");
         pure $ size
     );
 
@@ -453,18 +466,20 @@ namespace Socket {
     // When the socket has been shutdown, the return value will be 0.
     recv: I64 -> Socket -> IOFail (Array U8);
     recv = |size_to_recv, socket| (
-        let _ = *pure();    // make it lazy
+        pure();;    // make it lazy
         let bytes = Array::fill(size_to_recv, 0_U8);
         let flags = 0_I32;
-        let size = socket.@data.borrow(|fd|
-            bytes.borrow_ptr(|p_bytes|
-                FFI_CALL[I64 recv(I32, Ptr, U64, I32), fd, p_bytes, size_to_recv.to_U64, flags]
+        let size = *socket.borrow_fd_io(|fd|
+            bytes.borrow_ptr_io(|p_bytes|
+                //eval debug_eprintln("recv: fd=" + fd.to_string);
+                FFI_CALL_IO[I64 recv(I32, Ptr, U64, I32), fd, p_bytes, size_to_recv.to_U64, flags]
             )
-        );
+        ).lift;
         if size == -1 {
-            let _ = *_perror("recv").lift;
+            _perror("recv").lift;;
             throw $ "recv failed"
         };
+        //eval debug_eprintln("recv success");
         let bytes =  bytes.get_sub_ex(0, size);
         pure $ bytes
     );
@@ -565,8 +580,9 @@ namespace BufferedSocket {
 connect_to_tcp_server: String  -> IOFail Socket;
 connect_to_tcp_server = |host_port| (
     let socket_address: SocketAddress = *SocketAddress::resolve(host_port);
+    //println("connect_to_tcp_server: socket_address=" + socket_address.to_string).lift;;
     let socket = *Socket::make_tcp_socket();
-    let _ = *socket.connect(socket_address);
+    socket.connect(socket_address);;
     pure $ socket
 );
 
@@ -581,9 +597,10 @@ connect_to_tcp_server = |host_port| (
 listen_tcp_server: String -> I64 -> IOFail Socket;
 listen_tcp_server = |server_host_port, backlog| (
     let socket_address: SocketAddress = *SocketAddress::resolve(server_host_port);
+    //println("listen_tcp_server: socket_address=" + socket_address.to_string).lift;;
     let socket: Socket = *Socket::make_tcp_socket();
     // TODO: set SO_REUSEADDR to reuse TIME_WAIT socket
-    let _ = *socket.bind(socket_address);
-    let _ = *socket.listen(backlog);
+    socket.bind(socket_address);;
+    socket.listen(backlog);;
     pure $ socket
 );
