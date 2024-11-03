@@ -45,7 +45,7 @@ create_simple_request = |_| (
     let (read_fh, writer_task) = *open_string_reader(text);
     let req = *Request::parse(read_fh, "192.168.10.10:65432");
     close_file(read_fh).lift;;
-    let _ = writer_task.get;
+    writer_task.get.lift;;
     pure $ req
 );
 
