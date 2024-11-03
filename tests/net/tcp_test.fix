@@ -9,8 +9,7 @@ import Minilib.Testing.UnitTest;
 
 test_server_client: TestCase;
 test_server_client = (
-    let testname = "test_server_client";
-    make_test(testname) $ |_|
+    make_test("test_server_client") $ |_|
     // TODO: use ephemeral port number. (https://stackoverflow.com/questions/1075399/how-to-bind-to-any-available-port)
     let host_port = "127.0.0.1:32987";
     let var_server_started = *Var::make(false).lift;
@@ -43,10 +42,28 @@ test_server_client = (
     assert_equal("res_array", [ok(), ok()], res_array)
 );
 
+// Only test if name resolution succeeds without errors.
+// NOTE: Name resolution results are not tested.
+test_ipaddress_resolve: TestCase;
+test_ipaddress_resolve = (
+    make_table_test("test_ipaddress_resolve",
+        [
+            "localhost",
+            "www.github.com",
+            "www.google.com",
+        ],
+        |hostname|
+        let ipaddress = *IpAddress::resolve(hostname);
+        //println("resolved ip address: " + hostname + " ==> " + ipaddress.to_string).lift;;
+        pure()
+    )
+);
+
 main: IO ();
 main = (
     [
         test_server_client,
+        test_ipaddress_resolve,
         TestCase::empty
     ]
     .run_test_driver

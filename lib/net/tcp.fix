@@ -12,6 +12,7 @@
 module Minilib.Net.Tcp;
 
 import Minilib.Common.Assert;
+//import Minilib.Text.Hex;
 
 get_sub_ex: I64 -> I64 -> Array a -> Array a;
 get_sub_ex = |s, e, array| (
@@ -81,9 +82,9 @@ namespace HostEnt {
     _get_I32: Ptr -> I64 -> IO I32;
     _get_I32 = |ptr, offset| (
         let a_i32 = Array::fill(1, 0_I32);
-        a_i32.borrow_ptr_io(|p_i32|
+        let (a_i32, _) = *a_i32.mutate_boxed_io(|p_i32|
             FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_i32, ptr.add_offset(offset), 4_U64]
-        );;
+        );
         pure $ a_i32.@(0)
     );
 
@@ -91,9 +92,9 @@ namespace HostEnt {
     _get_Ptr: Ptr -> I64 -> IO Ptr;
     _get_Ptr = |ptr, offset| (
         let a_ptr = Array::fill(1, nullptr);
-        a_ptr.borrow_ptr_io(|p_ptr|
+        let (a_ptr, _) = *a_ptr.mutate_boxed_io(|p_ptr|
             FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_ptr, ptr.add_offset(offset), 8_U64]
-        );;
+        );
         pure $ a_ptr.@(0)
     );
 
@@ -105,11 +106,12 @@ namespace HostEnt {
         let buflen = buf.get_size.to_U64;
         let result: Array Ptr = Array::fill(1, nullptr);
         let h_errornop: Array I32 = Array::fill(1, 0_I32);
-        let res = *host.borrow_c_str_io(|p_host|
-            ret.borrow_ptr_io(|p_ret|
-                buf.borrow_ptr_io(|p_buf|
-                    result.borrow_ptr_io(|p_result|
-                        h_errornop.borrow_ptr_io(|p_h_errornop|
+        let (ret, (buf, (result, (h_errornop, res)))) = 
+          *host.borrow_c_str_io(|p_host|
+            ret.mutate_boxed_io(|p_ret|
+                buf.mutate_boxed_io(|p_buf|
+                    result.mutate_boxed_io(|p_result|
+                        h_errornop.mutate_boxed_io(|p_h_errornop|
                             FFI_CALL_IO[I32 gethostbyname_r(Ptr,Ptr,Ptr,U64,Ptr,Ptr),
                                 p_host, p_ret, p_buf, buflen, p_result, p_h_errornop]
                         )
@@ -129,6 +131,15 @@ namespace HostEnt {
         //eval ret.borrow_ptr(|p_ret|
         //    assert (hostent == p_ret)
         //);
+        /*
+        println(
+            "_gethostbyname_r: host=" + host
+            + "\n  ret=" + ret.to_string_hex
+            + "\n  buf=" + buf.to_string_hex
+            + "\n  result=" + result.to_string
+            + "\n  h_errornop=" + h_errornop.to_string
+        ).lift;;
+        */
         pure $ HostEnt { data: ret, buf: buf }
     );
 
@@ -156,9 +167,9 @@ namespace HostEnt {
         ).lift;
 
         let addr = Array::fill(4, 0_U8);
-        addr.borrow_ptr_io(|p_addr|
+        let (addr, _) = *addr.mutate_boxed_io(|p_addr|
             FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_addr, h_addr, 4_U64]
-        ).lift;;
+        ).lift;
         pure $ IpAddress { addr: addr }
     );
 }
