@@ -7,7 +7,7 @@ path = ".fixlang/deps/minilib-common_0.1.1"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "88f9ec9e382a09359ff51d55491825033e5cbf8b"
+rev = "10f1ac77347f1adb5c1cdaeec62983590b148642"
 
 [[dependencies]]
 name = "character"
@@ -20,12 +20,12 @@ rev = "c72c2ca5c8052e21200633dea1fff53c945d8799"
 
 [[dependencies]]
 name = "time"
-version = "0.2.3"
-path = ".fixlang/deps/time_0.2.3"
+version = "0.2.4"
+path = ".fixlang/deps/time_0.2.4"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
-rev = "74d1b4e5e93be2d700153a60ba5cd87cf7a00a1c"
+rev = "e64401e0c48c8fe7777e9ad2ecea76dd0a02848b"
 
 [[dependencies]]
 name = "random"
@@ -43,7 +43,7 @@ path = ".fixlang/deps/minilib-io_0.1.1"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-io.git"
-rev = "0973134abf7b35dc66784856fbf973bb703ad38d"
+rev = "da7a396dbccccb6647b295a96c1523842cc6ced1"
 
 [[dependencies]]
 name = "minilib-binary"
@@ -52,7 +52,7 @@ path = ".fixlang/deps/minilib-binary_0.1.0"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "2a48554c861e6b957113510031adcfce92ff3a0e"
+rev = "c90539164913541cba9bfead57b416853e74e103"
 
 [[dependencies]]
 name = "minilib-collection"
@@ -61,7 +61,7 @@ path = ".fixlang/deps/minilib-collection_0.1.0"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-collection.git"
-rev = "b59316e641b900470a4a228b7eb38c40bc66e911"
+rev = "e694d2457bdd767c1e104499799f85f32b281142"
 
 [[dependencies]]
 name = "hashmap"
@@ -97,7 +97,7 @@ path = ".fixlang/deps/minilib-xml_0.1.0"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-xml.git"
-rev = "7663ad2218ca9051e6ea5132cb11b8a86193c962"
+rev = "70ba9453bd8c4a8d0abf1651e0516bb58b4c12f5"
 
 [[dependencies]]
 name = "minilib-text"
@@ -106,4 +106,4 @@ path = ".fixlang/deps/minilib-text_0.1.0"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-text.git"
-rev = "4c0cd925762cb6544cfcb004bf3fecb87af694f6"
+rev = "9fd6aa5af7a93539266e21c846afec913241fd35"
