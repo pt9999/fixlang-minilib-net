@@ -12,8 +12,8 @@ open_string_reader = |str| (
     let (read_fh, write_fh) = *open_pipe;
     let writer_task = *AsyncIOTask::make(
         do {
-            let _ = *write_string(write_fh, str);
-            let _ = *close_file(write_fh).lift;
+            write_string(write_fh, str);;
+            close_file(write_fh).lift;;
             pure()
         }.try(|err| eprintln("writer_task: "+ err))
     ).lift;
@@ -26,10 +26,10 @@ open_string_writer = |_| (
     let reader_task = *AsyncIOTask::make(
         do {
             let str = *read_string(read_fh);
-            let _ = *close_file(read_fh).lift;
+            close_file(read_fh).lift;;
             pure $ str
         }.try(|err|
-            let _ = *eprintln("reader_task: "+ err);
+            eprintln("reader_task: "+ err);;
             pure $ ""
         )
     ).lift;
@@ -44,7 +44,7 @@ create_simple_request = |_| (
     ;
     let (read_fh, writer_task) = *open_string_reader(text);
     let req = *Request::parse(read_fh, "192.168.10.10:65432");
-    let _ = *close_file(read_fh).lift;
+    close_file(read_fh).lift;;
     let _ = writer_task.get;
     pure $ req
 );
@@ -54,12 +54,12 @@ test_request_simple = (
     let testname = "test_request_simple";
     make_test(testname) $ |_|
     let req = *create_simple_request();
-    let _ = *assert_equal("remote_addr", "192.168.10.10:65432", req.@remote_addr);
-    let _ = *assert_equal("method", "GET", req.@method);
-    let _ = *assert_equal("request_target", "/index.html", req.@request_target);
-    let _ = *assert_equal("http_version", "HTTP/1.1", req.@http_version);
-    //let _ = *println(req.@headers.to_string).lift;
-    let _ = *assert_equal("headers[Accept]", some("text/html"), req.@headers.find("Accept"));
+    assert_equal("remote_addr", "192.168.10.10:65432", req.@remote_addr);;
+    assert_equal("method", "GET", req.@method);;
+    assert_equal("request_target", "/index.html", req.@request_target);;
+    assert_equal("http_version", "HTTP/1.1", req.@http_version);;
+    //println(req.@headers.to_string).lift;;
+    assert_equal("headers[Accept]", some("text/html"), req.@headers.find("Accept"));;
     pure()
 );
 
@@ -72,15 +72,14 @@ get_response_output = |req, handler| (
     let res = Response::make(req);
     let res = *handler(res);
     let res = *res.end;
-    let _ = *close_file(write_fh).lift;
-    let output = reader_task.get;
-    pure $ output
+    close_file(write_fh).lift;;
+    reader_task.get.lift
 );
 
 assert_response_output_equal: Request -> Handler -> String -> IOFail ();
 assert_response_output_equal = |req, handler, expected| (
     let actual = *get_response_output(req, handler);
-    let _ = *assert_equal("output", expected, actual);
+    assert_equal("output", expected, actual);;
     pure()
 );
 
