@@ -20,6 +20,7 @@ files = [
     "tests/net/html_test.fix",
     "tests/net/request_test.fix",
     "tests/net/router_test.fix",
+    "tests/net/tcp_test.fix",
     "tests/net/url_test.fix",
 ]
 

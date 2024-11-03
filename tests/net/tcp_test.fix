@@ -1,0 +1,53 @@
+module TcpTest;
+
+import AsyncTask;
+
+import Minilib.Net.Tcp;
+import Minilib.Monad.FunctorM;
+import Minilib.Text.StringEx;
+import Minilib.Testing.UnitTest;
+
+test_server_client: TestCase;
+test_server_client = (
+    let testname = "test_server_client";
+    make_test(testname) $ |_|
+    // TODO: use ephemeral port number. (https://stackoverflow.com/questions/1075399/how-to-bind-to-any-available-port)
+    let host_port = "127.0.0.1:32987";
+    let var_server_started = *Var::make(false).lift;
+    let server: IOFail () = do {
+        let sock_listen = *Tcp::listen_tcp_server(host_port, 10);
+        var_server_started.Var::set(true).lift;;
+        let (sock, remote_addr) = *sock_listen.accept;
+        let bufsock = BufferedSocket::make(sock);
+        let (line, bufsock) = *bufsock.read_line;
+        assert_equal("request", "Request\n", line);;
+        let bufsock = *bufsock.write_str("Response\n");
+        let bufsock = *bufsock.flush;
+        //eval sock_listen;
+        pure()
+    };
+    let client: IOFail () = do {
+        var_server_started.Var::wait(|state| state == true).lift;;
+        let sock = *Tcp::connect_to_tcp_server(host_port);
+        let bufsock = BufferedSocket::make(sock);
+        let bufsock = *bufsock.write_str("Request\n");
+        let bufsock = *bufsock.flush;
+        let (line, bufsock) = *bufsock.read_line;
+        assert_equal("response", "Response\n", line);;
+        pure()
+    };
+    let iofail_array: Array (IOFail ()) = [server, client];
+    let io_array: Array (IO (Result ErrMsg ())) = iofail_array.map(to_result);
+    let task_array: Array (IOTask (Result ErrMsg ())) = *io_array.map_m(AsyncIOTask::make).lift;
+    let res_array: Array (Result ErrMsg ()) = *task_array.map_m(get).lift;
+    assert_equal("res_array", [ok(), ok()], res_array)
+);
+
+main: IO ();
+main = (
+    [
+        test_server_client,
+        TestCase::empty
+    ]
+    .run_test_driver
+);

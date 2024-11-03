@@ -5,6 +5,7 @@ import Minilib.Testing.UnitTest;
 import HtmlTest;
 import RequestTest;
 import RouterTest;
+import TcpTest;
 import UrlTest;
 
 testsuite: TestSuite;
@@ -12,6 +13,7 @@ testsuite = [
     ("HtmlTest", HtmlTest::main),
     ("RequestTest", RequestTest::main),
     ("RouterTest", RouterTest::main),
+    ("TcpTest", TcpTest::main),
     ("UrlTest", UrlTest::main),
 ];
 
