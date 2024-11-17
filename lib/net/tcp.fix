@@ -128,7 +128,7 @@ namespace HostEnt {
             throw $ "gethostbyname_r failed (hostent == nullptr): " + host
         };
         // hostent and ret._get_ptr should be same pointer, but Ptr does not implement Eq.
-        //eval ret.borrow_ptr(|p_ret|
+        //eval ret.borrow_boxed(|p_ret|
         //    assert (hostent == p_ret)
         //);
         /*
@@ -147,7 +147,7 @@ namespace HostEnt {
     get_h_length: HostEnt -> IOFail I64;
     get_h_length = |hostent| (
         pure();;    // make it lazy
-        let h_length = *hostent.@data.borrow_ptr_io(|p_hostent|
+        let h_length = *hostent.@data.borrow_boxed_io(|p_hostent|
             _get_I32(p_hostent, 20)
         ).lift;
         pure $ h_length.to_I64
@@ -158,7 +158,7 @@ namespace HostEnt {
     get_h_addr = |index, hostent| (
         pure();;    // make it lazy
         let h_addr_list: Ptr = *(                    // char**
-            hostent.@data.borrow_ptr_io(|p_hostent|
+            hostent.@data.borrow_boxed_io(|p_hostent|
                 _get_Ptr(p_hostent, 24)
             )
         ).lift;
@@ -365,7 +365,7 @@ namespace Socket {
         pure();;    // make it lazy
         let addr = socket_address.@sockaddr_in;
         let ret = *socket.borrow_fd_io(|fd|
-            addr.borrow_ptr(|p_addr|
+            addr.borrow_boxed(|p_addr|
                 FFI_CALL_IO[I32 bind(I32, Ptr, U32), fd, p_addr, addr.get_size.to_U32]
             )
         ).lift;
@@ -410,8 +410,8 @@ namespace Socket {
         let addrlen: Array U32 = Array::fill(1, 0_U32);
         let addrlen = addrlen.set(0, addr.get_size.to_U32);
         let fd = *socket.borrow_fd_io(|sockfd|
-            addr.borrow_ptr_io(|p_addr|
-                addrlen.borrow_ptr_io(|p_addrlen|
+            addr.borrow_boxed_io(|p_addr|
+                addrlen.borrow_boxed_io(|p_addrlen|
                     FFI_CALL_IO[I32 accept(I32, Ptr, Ptr), sockfd, p_addr, p_addrlen]
                 )
             )
@@ -436,7 +436,7 @@ namespace Socket {
         let addr = remote_address.@sockaddr_in;
         let addrlen = addr.get_size;
         let ret = *socket.borrow_fd_io(|fd|
-            addr.borrow_ptr_io(|p_addr|
+            addr.borrow_boxed_io(|p_addr|
                 FFI_CALL_IO[I32 connect(I32, Ptr, U32), fd.to_I32, p_addr, addrlen.to_U32]
             )
         ).lift;
@@ -457,7 +457,7 @@ namespace Socket {
         let size_to_send = bytes.get_size.to_U64;
         let flags = 0_I32;
         let size = *socket.borrow_fd_io(|fd|
-            bytes.borrow_ptr_io(|p_bytes|
+            bytes.borrow_boxed_io(|p_bytes|
                 //eval debug_eprintln("send: fd=" + fd.to_string);
                 FFI_CALL_IO[I64 send(I32, Ptr, U64, I32), fd, p_bytes, size_to_send, flags]
             )
@@ -481,7 +481,7 @@ namespace Socket {
         let bytes = Array::fill(size_to_recv, 0_U8);
         let flags = 0_I32;
         let size = *socket.borrow_fd_io(|fd|
-            bytes.borrow_ptr_io(|p_bytes|
+            bytes.borrow_boxed_io(|p_bytes|
                 //eval debug_eprintln("recv: fd=" + fd.to_string);
                 FFI_CALL_IO[I64 recv(I32, Ptr, U64, I32), fd, p_bytes, size_to_recv.to_U64, flags]
             )
