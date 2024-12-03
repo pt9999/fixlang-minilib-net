@@ -2,108 +2,108 @@ proj_file_hash = "77bef2e67071209e0f91f36bd5154219"
 
 [[dependencies]]
 name = "minilib-common"
-version = "0.1.3"
-path = ".fixlang/deps/minilib-common_0.1.3"
+version = "0.1.4"
+path = ".fixlang/deps/minilib-common_0.1.4"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "c009f38159d6e6785b66b2444889f9e044cdeb31"
+rev = "f7046c1b0a7b83b6975617de62f9c022a2256506"
 
 [[dependencies]]
 name = "character"
-version = "0.1.1"
-path = ".fixlang/deps/character_0.1.1"
+version = "1.0.0"
+path = ".fixlang/deps/character_1.0.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-character.git"
-rev = "c72c2ca5c8052e21200633dea1fff53c945d8799"
+rev = "13e128d2b87a729c4e73d986994a5cedcf3e8f49"
 
 [[dependencies]]
 name = "time"
-version = "0.2.5"
-path = ".fixlang/deps/time_0.2.5"
+version = "1.0.0"
+path = ".fixlang/deps/time_1.0.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
-rev = "0344c52dc73d9ffe556387ed94077c0fab623296"
+rev = "0df92cf1c3ffc148d658c1a554c94105aef13520"
 
 [[dependencies]]
 name = "random"
-version = "0.1.1"
-path = ".fixlang/deps/random_0.1.1"
+version = "1.0.0"
+path = ".fixlang/deps/random_1.0.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-random.git"
-rev = "b77979767813d7cabff93e36c7516a8f8f8e90de"
+rev = "b802af50726199a6dc815bef1cc64075cd4cbd2d"
 
 [[dependencies]]
 name = "minilib-io"
-version = "0.2.4"
-path = ".fixlang/deps/minilib-io_0.2.4"
+version = "0.2.5"
+path = ".fixlang/deps/minilib-io_0.2.5"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-io.git"
-rev = "286c838884b99d7d61424ed52568020812232860"
+rev = "62ac0db57026a66ccb7600d373c5c6abbcbbf96c"
 
 [[dependencies]]
 name = "minilib-binary"
-version = "0.1.4"
-path = ".fixlang/deps/minilib-binary_0.1.4"
+version = "0.1.5"
+path = ".fixlang/deps/minilib-binary_0.1.5"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "75ac1cf2e11a618bba45bf417ae33409c3339c2a"
+rev = "55f3005a8ec85a0d4252ce52a0fb44c4a0c31349"
 
 [[dependencies]]
 name = "minilib-collection"
-version = "0.1.3"
-path = ".fixlang/deps/minilib-collection_0.1.3"
+version = "0.1.4"
+path = ".fixlang/deps/minilib-collection_0.1.4"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-collection.git"
-rev = "f19698d23c9ce6f146d71f43ff9e5c710cbbc7e1"
+rev = "0f0d5305473c4de87e62fd11acd90dad4403583f"
 
 [[dependencies]]
 name = "hashmap"
-version = "0.1.1"
-path = ".fixlang/deps/hashmap_0.1.1"
+version = "1.0.0"
+path = ".fixlang/deps/hashmap_1.0.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-hashmap.git"
-rev = "6d15089dd991ed2f4175104364c43297c73456fc"
+rev = "57b578c24738d6a5d19bb60a1705edec321485ff"
 
 [[dependencies]]
 name = "hash"
-version = "0.1.0"
-path = ".fixlang/deps/hash_0.1.0"
+version = "1.0.0"
+path = ".fixlang/deps/hash_1.0.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-hash.git"
-rev = "0e05f132ebc9420759a789fcd9e1afa739769c39"
+rev = "4b2f01c2d7309447fe7cd68a8d105ae86e2bde97"
 
 [[dependencies]]
 name = "asynctask"
-version = "0.2.10"
-path = ".fixlang/deps/asynctask_0.2.10"
+version = "1.0.0"
+path = ".fixlang/deps/asynctask_1.0.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-asynctask.git"
-rev = "a5876e1e314971f0f05b54dc9938f0326c34fa9c"
+rev = "6b36519aade839ecb28ec236bc4cabe37416f398"
 
 [[dependencies]]
 name = "minilib-xml"
-version = "0.1.3"
-path = ".fixlang/deps/minilib-xml_0.1.3"
+version = "0.1.4"
+path = ".fixlang/deps/minilib-xml_0.1.4"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-xml.git"
-rev = "982fc23c91472ea4035cfbb94397c6fe578d6f9d"
+rev = "8d2119beaf9727618aeaf2610e4c8ba1f44a70f3"
 
 [[dependencies]]
 name = "minilib-text"
-version = "0.1.3"
-path = ".fixlang/deps/minilib-text_0.1.3"
+version = "0.1.4"
+path = ".fixlang/deps/minilib-text_0.1.4"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-text.git"
-rev = "2127713618d91bd9f33aaf9a2fe844c32c0d3cab"
+rev = "f15fe5af14563c5408ff14c79d7b634f05e80cb0"
