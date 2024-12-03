@@ -1,0 +1,12 @@
+module Main;
+
+main: IO ();
+main = (
+    let args = *IO::get_args;
+    let hostname = if args.get_size >= 2 { args.@(1) } else {"localhost"};
+    let err = *hostname.borrow_c_str_io(|p_hostname|
+        FFI_CALL_IO[CInt minilib_net_resolve_ipaddress_v4(Ptr, Ptr), p_hostname, nullptr]
+    );
+    println("err=" + err.to_string);;
+    pure()
+);

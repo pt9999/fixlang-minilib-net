@@ -14,6 +14,8 @@ files = [
     "lib/net/tcp.fix",
     "lib/net/url.fix",
 ]
+objects = ["lib.o"]
+preliminary_commands = [["make", "lib.o"]]
 
 [build.test]
 opt_level = "separated"
