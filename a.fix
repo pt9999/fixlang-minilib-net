@@ -1,9 +1,10 @@
 module Main;
 
 import Minilib.IO.Errno;
+import Minilib.Net.Tcp;
 
-main: IO ();
-main = (
+main1: IO ();
+main1 = (
     let args = *IO::get_args;
     let hostname = if args.get_size >= 2 { args.@(1) } else {"localhost"};
     let addr = Array::fill(32, 0_U8);
@@ -22,3 +23,14 @@ main = (
     println("addr_size=" + addr_size.to_string);;
     pure()
 );
+
+main: IO ();
+main = (
+    let args = *IO::get_args;
+    let hostname = if args.get_size >= 2 { args.@(1) } else {"localhost"};
+    do {
+        let addr = *IpAddress::resolve(hostname);
+        println("addr=" + addr.to_string).lift
+    }.try(eprintln)
+);
+

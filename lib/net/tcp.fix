@@ -69,111 +69,6 @@ impl IpAddress: ToString {
     );
 }
 
-type HostEnt = unbox struct {
-    data: Array U8,
-    buf: Array U8
-};
-
-namespace HostEnt {
-    _hostent_size: I64;
-    _hostent_size = 32;
-
-    // Extract an I32 value, ie. *(u32_t*)(ptr + offset)
-    _get_I32: Ptr -> I64 -> IO I32;
-    _get_I32 = |ptr, offset| (
-        let a_i32 = Array::fill(1, 0_I32);
-        let (a_i32, _) = *a_i32.mutate_boxed_io(|p_i32|
-            FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_i32, ptr.add_offset(offset), 4_U64]
-        );
-        pure $ a_i32.@(0)
-    );
-
-    // Extract an Ptr value, ie. *(void**)(ptr + offset)
-    _get_Ptr: Ptr -> I64 -> IO Ptr;
-    _get_Ptr = |ptr, offset| (
-        let a_ptr = Array::fill(1, nullptr);
-        let (a_ptr, _) = *a_ptr.mutate_boxed_io(|p_ptr|
-            FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_ptr, ptr.add_offset(offset), 8_U64]
-        );
-        pure $ a_ptr.@(0)
-    );
-
-    _gethostbyname_r: String -> IOFail HostEnt;
-    _gethostbyname_r = |host| (
-        pure();;    // make it lazy
-        let ret: Array U8 = Array::fill(_hostent_size, 0_U8);
-        let buf: Array U8 = Array::fill(1024, 0_U8);
-        let buflen = buf.get_size.to_U64;
-        let result: Array Ptr = Array::fill(1, nullptr);
-        let h_errornop: Array I32 = Array::fill(1, 0_I32);
-        let (ret, (buf, (result, (h_errornop, res)))) = 
-          *host.borrow_c_str_io(|p_host|
-            ret.mutate_boxed_io(|p_ret|
-                buf.mutate_boxed_io(|p_buf|
-                    result.mutate_boxed_io(|p_result|
-                        h_errornop.mutate_boxed_io(|p_h_errornop|
-                            FFI_CALL_IO[I32 gethostbyname_r(Ptr,Ptr,Ptr,U64,Ptr,Ptr),
-                                p_host, p_ret, p_buf, buflen, p_result, p_h_errornop]
-                        )
-                    )
-                )
-            )
-        ).lift;
-        if res != 0_I32 {
-            _perror("gethostbyname_r").lift;;
-            throw $ "gethostbyname_r failed: " + host
-        };
-        let hostent: Ptr = result.@(0);
-        if hostent == nullptr {
-            throw $ "gethostbyname_r failed (hostent == nullptr): " + host
-        };
-        // hostent and ret._get_ptr should be same pointer, but Ptr does not implement Eq.
-        //eval ret.borrow_boxed(|p_ret|
-        //    assert (hostent == p_ret)
-        //);
-        /*
-        println(
-            "_gethostbyname_r: host=" + host
-            + "\n  ret=" + ret.to_string_hex
-            + "\n  buf=" + buf.to_string_hex
-            + "\n  result=" + result.to_string
-            + "\n  h_errornop=" + h_errornop.to_string
-        ).lift;;
-        */
-        pure $ HostEnt { data: ret, buf: buf }
-    );
-
-    // get `h_length` field of the hostent.
-    get_h_length: HostEnt -> IOFail I64;
-    get_h_length = |hostent| (
-        pure();;    // make it lazy
-        let h_length = *hostent.@data.borrow_boxed_io(|p_hostent|
-            _get_I32(p_hostent, 20)
-        ).lift;
-        pure $ h_length.to_I64
-    );
-
-    // get `h_addr_list[index]` field of the hostent.
-    get_h_addr: I64 -> HostEnt -> IOFail IpAddress;
-    get_h_addr = |index, hostent| (
-        pure();;    // make it lazy
-        let h_addr_list: Ptr = *(                    // char**
-            hostent.@data.borrow_boxed_io(|p_hostent|
-                _get_Ptr(p_hostent, 24)
-            )
-        ).lift;
-        let h_addr: Ptr = *(                         // char*
-            _get_Ptr(h_addr_list, 8 * index)
-        ).lift;
-
-        let addr = Array::fill(4, 0_U8);
-        let (addr, _) = *addr.mutate_boxed_io(|p_addr|
-            FFI_CALL_IO[Ptr memcpy(Ptr,Ptr,U64), p_addr, h_addr, 4_U64]
-        ).lift;
-        pure $ IpAddress { addr: addr }
-    );
-}
-
 namespace IpAddress {
     // Converts a byte array to an `IpAddress`. The length of the byte array must be 4.
     from_array: Array U8 -> IpAddress;
@@ -192,13 +87,29 @@ namespace IpAddress {
         if res.is_ok {
             res.from_result
         };
-        let hostent = *_gethostbyname_r(host);
-        let h_length = *hostent.get_h_length;
-        if h_length < 1 {
-            throw $ "resolve_host: h_length < 1: " + host
-        };
-        let ipaddress = *hostent.get_h_addr(0);
+        let ipaddress = *_resolve_ipaddress_v4(host);
         pure $ ipaddress
+    );
+
+    _resolve_ipaddress_v4: String -> IOFail IpAddress;
+    _resolve_ipaddress_v4 = |hostname| (
+        let addr = Array::fill(4, 0_U8);
+        let addr_size = [ addr.get_size.to_CSizeT ];
+        FFI::clear_errno.lift;;
+        let (addr_size, (addr, err)) = *addr_size.mutate_boxed_io(|p_addr_size|
+            addr.mutate_boxed_io(|p_addr|
+                hostname.borrow_c_str_io(|p_hostname|
+                    FFI_CALL_IO[CInt minilib_net_resolve_ipaddress_v4(Ptr, Ptr, Ptr), p_hostname, p_addr, p_addr_size]
+                )
+            )
+        ).lift;
+        if err != 0.to_CInt {
+            throw $ "Failed to resolve IP address: hostname=" + hostname.to_string + " err=" + err.to_string
+        };
+        if addr_size.@(0) != 4.to_CSizeT {
+            throw $ "Failed to resolve IP address: hostname=" + hostname.to_string + " addr_size=" + addr_size.@(0).to_string
+        };
+        pure $ IpAddress::from_array(addr)
     );
 }
 
