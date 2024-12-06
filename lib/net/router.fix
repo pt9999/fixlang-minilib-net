@@ -37,9 +37,15 @@ namespace RouterEntry {
         entry.@map.find(method)
     );
 
-    show: [h: ToString] RouterEntry h -> IO ();
-    show = |entry| (
-        println (entry.@map.to_string)
+}
+
+impl [h: ToString] RouterEntry h: ToString {
+    to_string = |entry| (
+        "RouterEntry { "
+        +   entry.@map.to_iter.map(|(k,v)| 
+                k.to_string + ":" + v.to_string
+            ).join(",")
+        + " }"
     );
 }
 
@@ -95,6 +101,7 @@ namespace RouterNode {
         child_node.find(child_path)
     );
 
+    // TODO: use Writer monad
     show: [h: ToString] String -> RouterNode h -> IO ();
     show = |prefix, node| (
         let print_entry = (
@@ -102,7 +109,7 @@ namespace RouterNode {
                 pure()
             };   
             let _ = *print(prefix + ": ");
-            node.@entry.show
+            print(node.@entry.to_string)
         );
         let print_directory = (
             let ends_with: String -> String -> Bool = |e,s| (
