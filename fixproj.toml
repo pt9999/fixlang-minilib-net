@@ -1,6 +1,6 @@
 [general]
 name = "minilib-net"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["pt9999"]
 license = "MIT"
 
