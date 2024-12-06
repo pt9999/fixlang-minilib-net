@@ -61,6 +61,26 @@ namespace IpAddress {
         IpAddress { addr: addr }
     );
 
+    // Converts U32 to an `IpAddress`, for example 0x7f000001_U32 -> 127.0.0.1.
+    from_U32: U32 -> IpAddress;
+    from_U32 = |u32| (
+        IpAddress { addr: [
+            u32.shift_right(24_U32).to_U8,
+            u32.shift_right(16_U32).to_U8,
+            u32.shift_right(8_U32).to_U8,
+            u32.shift_right(0_U32).to_U8,
+        ] }
+    );
+
+    to_U32: IpAddress -> U32;
+    to_U32 = |addr| (
+        let addr = addr.@addr;
+        addr.@(0).to_U32.shift_left(24_U32)
+        .bit_or(addr.@(1).to_U32.shift_left(16_U32))
+        .bit_or(addr.@(2).to_U32.shift_left(8_U32))
+        .bit_or(addr.@(3).to_U32.shift_left(0_U32))
+    );
+
     // Resolve a hostname such as "127.0.0.1" or "www.example.com".
     resolve: String -> IOFail IpAddress;
     resolve = |host| (
@@ -99,6 +119,14 @@ namespace IpAddress {
 // This type reprents IPv4 port number, 0-65535.
 type Port = unbox struct { port: U16 };
 
+namespace Port {
+    from_U16: U16 -> Port;
+    from_U16 = |u16| Port { port: u16 };
+
+    to_U16: Port -> U16;
+    to_U16 = @port;
+}
+
 impl Port: FromString
 {
     // Parse port string (eg. "8080" -> 8080_U16)
@@ -107,7 +135,7 @@ impl Port: FromString
         if res.is_err {
             err $ "Invalid port: " + port_str + ": " + res.as_err
         };
-        ok $ Port { port: res.as_ok }
+        ok $ Port::from_U16 $ res.as_ok
     );
 }
 
@@ -117,36 +145,30 @@ impl Port: ToString
 }
 
 namespace SocketAddress {
-    _sockaddr_in_size: I64;
-    _sockaddr_in_size = 16;
-
     // This type represents IPv4 ip address and port number.
     type SocketAddress = unbox struct {
-        sockaddr_in: Array U8
+        dtor: Destructor Ptr    // struct sockaddr_in*
     };
-
-    _unsafe_from_array: Array U8 -> SocketAddress;
-    _unsafe_from_array = |array| (
-        SocketAddress { sockaddr_in: array }
-    );
 
     // Creates a `SocketAddress` from an ip address and a port.
     make: IpAddress -> Port -> SocketAddress;
     make = |ipaddress, port| (
-        //eval debug_eprintln("ipaddress="+ipaddress.to_string + " port="+port.to_string);
-        let addr = ipaddress.@addr;
-        let port = port.@port;
-        let port_h: U8 = port.shift_right(8_U16).bit_and(255_U16).to_U8;
-        let port_l: U8 = port.bit_and(255_U16).to_U8;
-        //eval debug_eprintln ("port_h="+port_h.to_string+" port_l="+port_l.to_string);
-        let sockaddr_in = [
-            2_U8, 0_U8, // sin_family = _AF_INET, host byte order
-            port_h, port_l, // sin_port
-            addr.@(0), addr.@(1), addr.@(2), addr.@(3), // sin_addr
-            0_U8, 0_U8, 0_U8, 0_U8,
-            0_U8, 0_U8, 0_U8, 0_U8
-        ];
-        SocketAddress { sockaddr_in: sockaddr_in }
+        let addr: U32 = ipaddress.to_U32;
+        let port: U16 = port.@port;
+        let sin: Ptr = FFI_CALL[Ptr minilib_net_sockaddr_in_create(U32, U16), addr, port];
+        _unsafe_from_sockaddr_in(sin)
+    );
+
+    // Creates a `SocketAddress` from an allocated pointer to `struct sockaddr_in`.
+    _unsafe_from_sockaddr_in: Ptr -> SocketAddress;
+    _unsafe_from_sockaddr_in = |sin| (
+        SocketAddress { 
+            dtor: Destructor::make(
+                sin, |sin|
+                FFI_CALL_IO[() minilib_net_sockaddr_in_destroy(Ptr), sin];;
+                pure $ nullptr
+            )
+        }
     );
 
     // Splits the first argument into a host name and a port number, then resolves the host
@@ -173,16 +195,19 @@ namespace SocketAddress {
     // Extracts an ip address from the socket address.
     get_ipaddress: SocketAddress -> IpAddress;
     get_ipaddress = |socket_address| (
-        let sa = socket_address.@sockaddr_in;
-        IpAddress::from_array(sa.get_sub(4, 8))
+        let addr: U32 = socket_address.@dtor.borrow(|sin|
+            FFI_CALL[U32 minilib_net_sockaddr_in_get_address(Ptr), sin]
+        );
+        IpAddress::from_U32(addr)
     );
 
     // Extracts a port number from the socket address.
-    get_port: SocketAddress -> I64;
+    get_port: SocketAddress -> Port;
     get_port = |socket_address| (
-        let sa = socket_address.@sockaddr_in;
-        let port = sa.@(2).to_U16.shift_left(8_U16).bit_or(sa.@(3).to_U16);
-        port.to_I64
+        let port: U16 = socket_address.@dtor.borrow(|sin|
+            FFI_CALL[U16 minilib_net_sockaddr_in_get_port(Ptr), sin]
+        );
+        Port::from_U16 $ port
     );
 }
 
@@ -198,7 +223,7 @@ impl SocketAddress : ToString {
 // It consists of a socket file descriptor.
 // The socket file descripter is closed automatically when Socket is deallocated.
 type Socket = unbox struct {
-    data: Destructor I32
+    data: Destructor CInt
 };
 
 impl Socket: ToString {
@@ -210,25 +235,23 @@ impl Socket: ToString {
 namespace Socket {
     // Creates `Socket` from a file descriptor of a socket.
     // The socket will be automatically closed when `Socket` is deallocated.
-    _unsafe_from_fd: I32 -> IOFail Socket;
+    _unsafe_from_fd: CInt -> IOFail Socket;
     _unsafe_from_fd = |fd| (
         //eval debug_eprintln("Socket::_unsafe_from_fd: fd=" + fd.to_string);
         pure $ Socket {
             data: Destructor::make(fd, |fd|
                 //eval debug_eprintln ("closing socket fd: " + fd.to_string);
-                let res = *FFI_CALL_IO[I32 close(I32), fd];
-                eval if res != 0_I32 {
-                    debug_eprintln("closing socket failed: res=" + res.to_string)
-                } else {
-                    ()
-                };
-                pure $ -1_I32
+                let res = *FFI_CALL_IO[CInt close(CInt), fd];
+                when(res.to_I64 != 0,
+                    eprintln("closing socket failed: res=" + res.to_string)
+                );;
+                pure $ -1.to_CInt
             )
         }
     );
 
     // Call an IO action with a file descriptor of a socket.
-    borrow_fd_io : (I32 -> IO a) -> Socket -> IO a;
+    borrow_fd_io : (CInt -> IO a) -> Socket -> IO a;
     borrow_fd_io = |act, sock| IO::from_runner $ |ios| (
         sock.@data.borrow(|fd| (act(fd).@runner)(ios))
     );
@@ -238,28 +261,39 @@ namespace Socket {
     make_tcp_socket: () -> IOFail Socket;
     make_tcp_socket = |_| (
         pure();;    // make it lazy
-        let sockfd = *FFI_CALL_IO[I32 minilib_net_make_tcp_socket()].lift;
-        if sockfd < 0_I32 {
+        let sockfd = *FFI_CALL_IO[CInt minilib_net_socket_create_ipv4_tcp()].lift;
+        if sockfd < 0.to_CInt {
             throw $ "creating socket failed: " + *get_last_error.lift
         };
         Socket::_unsafe_from_fd(sockfd)
+    );
+
+    setsockopt_reuseaddr: Socket -> IOFail ();
+    setsockopt_reuseaddr = |socket| (
+        pure();;    // make it lazy
+        let ret = *socket.borrow_fd_io(|sockfd|
+            FFI_CALL_IO[CInt minilib_net_socket_setsockopt_reuseaddr(CInt), sockfd]
+        ).lift;
+        if ret.to_I64 == -1 {
+            throw $ "setsockopt failed: " + *get_last_error.lift
+        };
+        pure()
     );
 
     // Assigns an IPv4 ip address and a port number to the socket.
     bind: SocketAddress -> Socket -> IOFail ();
     bind = |socket_address, socket| (
         pure();;    // make it lazy
-        let addr = socket_address.@sockaddr_in;
-        let ret = *socket.borrow_fd_io(|fd|
-            addr.borrow_boxed(|p_addr|
-                FFI_CALL_IO[I32 bind(I32, Ptr, U32), fd, p_addr, addr.get_size.to_U32]
+        let ret = *socket.borrow_fd_io(|sockfd|
+            socket_address.@dtor.borrow(|sin|
+                FFI_CALL_IO[CInt minilib_net_socket_bind(CInt, Ptr), sockfd, sin]
             )
         ).lift;
-        if ret == -1_I32 {
+        if ret.to_I64 == -1 {
             throw $ "bind failed: " + *get_last_error.lift + ": socket_address=" + socket_address.to_string
         };
-        //eval debug_eprintln("bind success: socket_address=" + socket_address.to_string);
-        pure $ ()
+        //eprintln("bind success: socket_address=" + socket_address.to_string).lift;;
+        pure()
     );
 
     // Listens the socket for incoming connection requests.
@@ -268,13 +302,13 @@ namespace Socket {
     listen = |backlog, socket| (
         pure();;    // make it lazy
         let ret = *socket.borrow_fd_io (|fd|
-            FFI_CALL_IO[I32 listen(I32, I32), fd, backlog.to_I32]
+            FFI_CALL_IO[CInt listen(CInt, CInt), fd, backlog.to_CInt]
         ).lift;
-        if ret == -1_I32 {
+        if ret.to_I64 == -1 {
             throw $ "listen failed: " + *get_last_error.lift
         };
-        //eval debug_eprintln("listen success");
-        pure $ ()
+        //eprintln("listen success").lift;;
+        pure()
     );
 
     // Waits for an incoming connection request. If an incoming connection arrives, accept it,
@@ -287,28 +321,23 @@ namespace Socket {
     );
 
     // Same as `accept()`, except that it returns the accepted socket's file descriptor instead of `Socket`.
-    accept_fd: Socket -> IOFail (I32, SocketAddress);
+    accept_fd: Socket -> IOFail (CInt, SocketAddress);
     accept_fd = |socket| (
         pure();;    // make it lazy
-        let addr: Array U8 = Array::fill(_sockaddr_in_size, 0_U8);
-        let addrlen: Array U32 = Array::fill(1, 0_U32);
-        let addrlen = addrlen.set(0, addr.get_size.to_U32);
-        let fd = *socket.borrow_fd_io(|sockfd|
-            addr.borrow_boxed_io(|p_addr|
-                addrlen.borrow_boxed_io(|p_addrlen|
-                    FFI_CALL_IO[I32 accept(I32, Ptr, Ptr), sockfd, p_addr, p_addrlen]
-                )
+        let p_addr: Array Ptr = [ nullptr ];
+        let (p_addr, fd) = *socket.borrow_fd_io(|sockfd|
+            p_addr.mutate_boxed_io(|pp_addr|
+                FFI_CALL_IO[CInt minilib_net_socket_accept(CInt, Ptr), sockfd, pp_addr]
             )
         ).lift;
-        if fd == -1_I32 {
+        if fd.to_I64 == -1 {
             throw $ "accept failed: " + *get_last_error.lift
         };
-        //eval debug_eprintln ("accepted fd="+fd.to_string+" addrlen="+addrlen.@(0).to_string);
-        let remote_address : SocketAddress = (
-            let len = addrlen.@(0).to_I64;
-            let addr = addr.subarray(0, len);
-            SocketAddress::_unsafe_from_array(addr)
-        );
+        if p_addr.@(0) == nullptr {
+            throw $ "accept failed: addr==null"
+        };
+        let remote_address : SocketAddress = SocketAddress::_unsafe_from_sockaddr_in(p_addr.@(0));
+        //eprintln ("accepted fd="+fd.to_string+" remote_address="+remote_address.to_string).lift;;
         pure $ (fd, remote_address)
     );
 
@@ -316,18 +345,16 @@ namespace Socket {
     connect: SocketAddress -> Socket -> IOFail ();
     connect = |remote_address, socket| (
         pure();;    // make it lazy
-        let addr = remote_address.@sockaddr_in;
-        let addrlen = addr.get_size;
-        let ret = *socket.borrow_fd_io(|fd|
-            addr.borrow_boxed_io(|p_addr|
-                FFI_CALL_IO[I32 connect(I32, Ptr, U32), fd.to_I32, p_addr, addrlen.to_U32]
+        let ret = *socket.borrow_fd_io(|sockfd|
+            remote_address.@dtor.borrow_io(|sin|
+                FFI_CALL_IO[CInt minilib_net_socket_connect(CInt, Ptr), sockfd, sin]
             )
         ).lift;
-        if ret == -1_I32 {
+        if ret.to_I64 == -1 {
             throw $ "connect failed: " + *get_last_error.lift
         };
-        //eval debug_eprintln("connect success");
-        pure $ ()
+        //eprintln("connect success").lift;;
+        pure()
     );
 
     // Transmits a message to another socket.
@@ -337,18 +364,18 @@ namespace Socket {
     send = |bytes, socket| (
         pure();;    // make it lazy
         let size_to_send = bytes.get_size.to_U64;
-        let flags = 0_I32;
+        let flags = 0.to_CInt;
         let size = *socket.borrow_fd_io(|fd|
             bytes.borrow_boxed_io(|p_bytes|
                 //eval debug_eprintln("send: fd=" + fd.to_string);
-                FFI_CALL_IO[I64 send(I32, Ptr, U64, I32), fd, p_bytes, size_to_send, flags]
+                FFI_CALL_IO[CSizeT send(CInt, Ptr, CSizeT, CInt), fd, p_bytes, size_to_send, flags]
             )
         ).lift;
-        if size == -1 {
+        if size.to_I64 == -1 {
             throw $ "send failed: " + *get_last_error.lift
         };
         //eval debug_eprintln("send success");
-        pure $ size
+        pure $ size.to_I64
     );
 
     // Receives messages from a socket.
@@ -360,18 +387,18 @@ namespace Socket {
     recv = |size_to_recv, socket| (
         pure();;    // make it lazy
         let bytes = Array::fill(size_to_recv, 0_U8);
-        let flags = 0_I32;
+        let flags = 0.to_CInt;
         let size = *socket.borrow_fd_io(|fd|
             bytes.borrow_boxed_io(|p_bytes|
                 //eval debug_eprintln("recv: fd=" + fd.to_string);
-                FFI_CALL_IO[I64 recv(I32, Ptr, U64, I32), fd, p_bytes, size_to_recv.to_U64, flags]
+                FFI_CALL_IO[CSizeT recv(CInt, Ptr, CSizeT, CInt), fd, p_bytes, size_to_recv.to_U64, flags]
             )
         ).lift;
-        if size == -1 {
+        if size.to_I64 == -1 {
             throw $ "recv failed: " + *get_last_error.lift
         };
         //eval debug_eprintln("recv success");
-        let bytes =  bytes.subarray(0, size);
+        let bytes =  bytes.subarray(0, size.to_I64);
         pure $ bytes
     );
 }
@@ -488,9 +515,9 @@ connect_to_tcp_server = |host_port| (
 listen_tcp_server: String -> I64 -> IOFail Socket;
 listen_tcp_server = |server_host_port, backlog| (
     let socket_address: SocketAddress = *SocketAddress::resolve(server_host_port);
-    //println("listen_tcp_server: socket_address=" + socket_address.to_string).lift;;
+    //eprintln("listen_tcp_server: socket_address=" + socket_address.to_string).lift;;
     let socket: Socket = *Socket::make_tcp_socket();
-    // TODO: set SO_REUSEADDR to reuse TIME_WAIT socket
+    socket.setsockopt_reuseaddr;;
     socket.bind(socket_address);;
     socket.listen(backlog);;
     pure $ socket
