@@ -12,25 +12,8 @@
 module Minilib.Net.Tcp;
 
 import Minilib.Common.Assert;
-//import Minilib.Text.Hex;
-
-get_sub_ex: I64 -> I64 -> Array a -> Array a;
-get_sub_ex = |s, e, array| (
-    let s = max(0, s);
-    let e = max(s, min(array.get_size, e));
-    if s == 0 && e == array.get_size {
-        array
-    };
-    array.get_sub(s,e)
-);
-
-_perror: String -> IO ();
-_perror = |str| (
-    pure();;    // make it lazy
-    str.borrow_c_str_io(|ptr|
-        FFI_CALL_IO[() perror(Ptr), ptr]
-    )
-);
+import Minilib.IO.Errno;
+import Minilib.Text.StringEx;
 
 // This type represents IPv4 ip address,
 // eg. 127.0.0.1, 192.168.0.1 etc.
@@ -264,8 +247,7 @@ namespace Socket {
         pure();;    // make it lazy
         let sockfd = *FFI_CALL_IO[I32 socket(I32, I32, I32), _AF_INET, _SOCK_STREAM, 0.to_I32].lift;
         if sockfd < 0_I32 {
-            _perror("socket").lift;;
-            throw $ "creating socket failed"
+            throw $ "creating socket failed: " + *get_last_error.lift
         };
         Socket::_unsafe_from_fd(sockfd)
     );
@@ -281,8 +263,7 @@ namespace Socket {
             )
         ).lift;
         if ret == -1_I32 {
-            _perror("bind").lift;;
-            throw $ "bind failed: socket_address=" + socket_address.to_string
+            throw $ "bind failed: " + *get_last_error.lift + ": socket_address=" + socket_address.to_string
         };
         //eval debug_eprintln("bind success: socket_address=" + socket_address.to_string);
         pure $ ()
@@ -297,8 +278,7 @@ namespace Socket {
             FFI_CALL_IO[I32 listen(I32, I32), fd, backlog.to_I32]
         ).lift;
         if ret == -1_I32 {
-            _perror("listen").lift;;
-            throw $ "listen failed"
+            throw $ "listen failed: " + *get_last_error.lift
         };
         //eval debug_eprintln("listen success");
         pure $ ()
@@ -328,13 +308,12 @@ namespace Socket {
             )
         ).lift;
         if fd == -1_I32 {
-            _perror("accept").lift;;
-            throw $ "accept failed"
+            throw $ "accept failed: " + *get_last_error.lift
         };
         //eval debug_eprintln ("accepted fd="+fd.to_string+" addrlen="+addrlen.@(0).to_string);
         let remote_address : SocketAddress = (
             let len = addrlen.@(0).to_I64;
-            let addr = addr.get_sub_ex(0, len);
+            let addr = addr.subarray(0, len);
             SocketAddress::_unsafe_from_array(addr)
         );
         pure $ (fd, remote_address)
@@ -352,8 +331,7 @@ namespace Socket {
             )
         ).lift;
         if ret == -1_I32 {
-            _perror("connect").lift;;
-            throw $ "connect failed"
+            throw $ "connect failed: " + *get_last_error.lift
         };
         //eval debug_eprintln("connect success");
         pure $ ()
@@ -374,8 +352,7 @@ namespace Socket {
             )
         ).lift;
         if size == -1 {
-            _perror("send").lift;;
-            throw $ "send failed"
+            throw $ "send failed: " + *get_last_error.lift
         };
         //eval debug_eprintln("send success");
         pure $ size
@@ -398,11 +375,10 @@ namespace Socket {
             )
         ).lift;
         if size == -1 {
-            _perror("recv").lift;;
-            throw $ "recv failed"
+            throw $ "recv failed: " + *get_last_error.lift
         };
         //eval debug_eprintln("recv success");
-        let bytes =  bytes.get_sub_ex(0, size);
+        let bytes =  bytes.subarray(0, size);
         pure $ bytes
     );
 }
@@ -455,7 +431,7 @@ namespace BufferedSocket {
             let socket = bufsock.@socket;
             let size = *socket.send(bytes);
             //eval debug_eprintln("size="+size.to_string+ " to="+size_to_write.to_string);
-            let bytes = bytes.get_sub_ex(size, size_to_write);
+            let bytes = bytes.subarray(size, size_to_write);
             let bufsock = bufsock.set_write_buf(bytes);
             continue_m $ bufsock
         )
@@ -479,9 +455,9 @@ namespace BufferedSocket {
             let index = read_buf.find_by(|b| b == '\n');
             if index.is_some {
                 let index = index.as_some;
-                let line = read_buf.get_sub_ex(0, index + 1);
+                let line = read_buf.subarray(0, index + 1);
                 let line: String = line.push_back(0_U8)._unsafe_from_c_str;
-                let read_buf = read_buf.get_sub_ex(index + 1, read_buf.get_size);
+                let read_buf = read_buf.subarray(index + 1, read_buf.get_size);
                 let bufsock = bufsock.set_read_buf(read_buf);
                 break_m $ (line, bufsock)
             };
