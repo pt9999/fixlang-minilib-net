@@ -35,6 +35,8 @@ Router is a mapping from a method name and a path to a request handler.
 
 # Trait implementations
 
+### `impl [h : Std::ToString] Minilib.Net.Router::RouterEntry h : Std::ToString`
+
 # Values
 
 ## `namespace Minilib.Net.Router::Router`
@@ -98,8 +100,6 @@ Updates a value of `RouterEntry` by applying a function to field `map`.
 
 Updates a value of `RouterEntry` by setting field `map` to a specified one.
 
-### `show : [h : Std::ToString] Minilib.Net.Router::RouterEntry h -> Std::IO ()`
-
 ### `update : Std::String -> h -> Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h`
 
 `router_entry.update(method, handler)` sets the handler of the method `method` to `handler`.
@@ -151,6 +151,8 @@ Updates a value of `RouterNode` by setting field `directory` to a specified one.
 Updates a value of `RouterNode` by setting field `entry` to a specified one.
 
 ### `show : [h : Std::ToString] Std::String -> Minilib.Net.Router::RouterNode h -> Std::IO ()`
+
+TODO: use Writer monad
 
 ### `update : Std::Iterator Std::String -> (Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h) -> Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h`
 

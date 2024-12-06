@@ -27,12 +27,6 @@ This type is a structure that wraps a `Socket` and maintains a write buffer, a r
 
 #### field `eof : Std::Bool`
 
-### `type HostEnt = unbox struct { ...fields... }`
-
-#### field `data : Std::Array Std::U8`
-
-#### field `buf : Std::Array Std::U8`
-
 ### `type IpAddress = unbox struct { ...fields... }`
 
 This type represents IPv4 ip address,
@@ -60,7 +54,7 @@ The socket file descripter is closed automatically when Socket is deallocated.
 
 This type represents IPv4 ip address and port number.
 
-#### field `sockaddr_in : Std::Array Std::U8`
+#### field `dtor : Std::FFI::Destructor Std::Ptr`
 
 # Traits and aliases
 
@@ -82,16 +76,12 @@ This type represents IPv4 ip address and port number.
 
 ## `namespace Minilib.Net.Tcp`
 
-### `_perror : Std::String -> Std::IO ()`
-
 ### `connect_to_tcp_server : Std::String -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
 
 Connects to a remote TCP server as a client.
 The first argument is `{host}:{port}`, where `{host}` is an IP Address (eg. `192.168.0.1`),
 or a FQDN host name (eg. `www.example.com`), and `{port}` is a port number (eg. `8080`).
 If the port number is omitted, the default port number is 80.
-
-### `get_sub_ex : Std::I64 -> Std::I64 -> Std::Array a -> Std::Array a`
 
 ### `listen_tcp_server : Std::String -> Std::I64 -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
 
@@ -193,69 +183,21 @@ Updates a value of `BufferedSocket` by setting field `write_buf` to a specified 
 Writes a string to the write buffer. The contents of the write buffer is not sent
 until the size of the write buffer is equal to or greater than `_BUFSIZE`, or `flush()` is called.
 
-## `namespace Minilib.Net.Tcp::HostEnt`
-
-### `@buf : Minilib.Net.Tcp::HostEnt -> Std::Array Std::U8`
-
-Retrieves the field `buf` from a value of `HostEnt`.
-
-### `@data : Minilib.Net.Tcp::HostEnt -> Std::Array Std::U8`
-
-Retrieves the field `data` from a value of `HostEnt`.
-
-### `_get_I32 : Std::Ptr -> Std::I64 -> Std::IO Std::I32`
-
-Extract an I32 value, ie. *(u32_t*)(ptr + offset)
-
-### `_get_Ptr : Std::Ptr -> Std::I64 -> Std::IO Std::Ptr`
-
-Extract an Ptr value, ie. *(void**)(ptr + offset)
-
-### `_gethostbyname_r : Std::String -> Std::IO::IOFail Minilib.Net.Tcp::HostEnt`
-
-### `_hostent_size : Std::I64`
-
-### `act_buf : [f : Std::Functor] (Std::Array Std::U8 -> f (Std::Array Std::U8)) -> Minilib.Net.Tcp::HostEnt -> f Minilib.Net.Tcp::HostEnt`
-
-Updates a value of `HostEnt` by applying a functorial action to field `buf`.
-
-### `act_data : [f : Std::Functor] (Std::Array Std::U8 -> f (Std::Array Std::U8)) -> Minilib.Net.Tcp::HostEnt -> f Minilib.Net.Tcp::HostEnt`
-
-Updates a value of `HostEnt` by applying a functorial action to field `data`.
-
-### `get_h_addr : Std::I64 -> Minilib.Net.Tcp::HostEnt -> Std::IO::IOFail Minilib.Net.Tcp::IpAddress`
-
-get `h_addr_list[index]` field of the hostent.
-
-### `get_h_length : Minilib.Net.Tcp::HostEnt -> Std::IO::IOFail Std::I64`
-
-get `h_length` field of the hostent.
-
-### `mod_buf : (Std::Array Std::U8 -> Std::Array Std::U8) -> Minilib.Net.Tcp::HostEnt -> Minilib.Net.Tcp::HostEnt`
-
-Updates a value of `HostEnt` by applying a function to field `buf`.
-
-### `mod_data : (Std::Array Std::U8 -> Std::Array Std::U8) -> Minilib.Net.Tcp::HostEnt -> Minilib.Net.Tcp::HostEnt`
-
-Updates a value of `HostEnt` by applying a function to field `data`.
-
-### `set_buf : Std::Array Std::U8 -> Minilib.Net.Tcp::HostEnt -> Minilib.Net.Tcp::HostEnt`
-
-Updates a value of `HostEnt` by setting field `buf` to a specified one.
-
-### `set_data : Std::Array Std::U8 -> Minilib.Net.Tcp::HostEnt -> Minilib.Net.Tcp::HostEnt`
-
-Updates a value of `HostEnt` by setting field `data` to a specified one.
-
 ## `namespace Minilib.Net.Tcp::IpAddress`
 
 ### `@addr : Minilib.Net.Tcp::IpAddress -> Std::Array Std::U8`
 
 Retrieves the field `addr` from a value of `IpAddress`.
 
+### `_resolve_ipaddress_v4 : Std::String -> Std::IO::IOFail Minilib.Net.Tcp::IpAddress`
+
 ### `act_addr : [f : Std::Functor] (Std::Array Std::U8 -> f (Std::Array Std::U8)) -> Minilib.Net.Tcp::IpAddress -> f Minilib.Net.Tcp::IpAddress`
 
 Updates a value of `IpAddress` by applying a functorial action to field `addr`.
+
+### `from_U32 : Std::U32 -> Minilib.Net.Tcp::IpAddress`
+
+Converts U32 to an `IpAddress`, for example 0x7f000001_U32 -> 127.0.0.1.
 
 ### `from_array : Std::Array Std::U8 -> Minilib.Net.Tcp::IpAddress`
 
@@ -273,6 +215,8 @@ Resolve a hostname such as "127.0.0.1" or "www.example.com".
 
 Updates a value of `IpAddress` by setting field `addr` to a specified one.
 
+### `to_U32 : Minilib.Net.Tcp::IpAddress -> Std::U32`
+
 ## `namespace Minilib.Net.Tcp::Port`
 
 ### `@port : Minilib.Net.Tcp::Port -> Std::U16`
@@ -283,6 +227,8 @@ Retrieves the field `port` from a value of `Port`.
 
 Updates a value of `Port` by applying a functorial action to field `port`.
 
+### `from_U16 : Std::U16 -> Minilib.Net.Tcp::Port`
+
 ### `mod_port : (Std::U16 -> Std::U16) -> Minilib.Net.Tcp::Port -> Minilib.Net.Tcp::Port`
 
 Updates a value of `Port` by applying a function to field `port`.
@@ -291,17 +237,13 @@ Updates a value of `Port` by applying a function to field `port`.
 
 Updates a value of `Port` by setting field `port` to a specified one.
 
+### `to_U16 : Minilib.Net.Tcp::Port -> Std::U16`
+
 ## `namespace Minilib.Net.Tcp::Socket`
 
 ### `@data : Minilib.Net.Tcp::Socket -> Std::FFI::Destructor Std::I32`
 
 Retrieves the field `data` from a value of `Socket`.
-
-### `_AF_INET : Std::I32`
-
-from /usr/include/x86_64-linux-gnu/bits/
-
-### `_SOCK_STREAM : Std::I32`
 
 ### `_unsafe_from_fd : Std::I32 -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
 
@@ -365,17 +307,19 @@ Returns the number of bytes sent.
 
 Updates a value of `Socket` by setting field `data` to a specified one.
 
+### `setsockopt_reuseaddr : Minilib.Net.Tcp::Socket -> Std::IO::IOFail ()`
+
 ## `namespace Minilib.Net.Tcp::SocketAddress`
 
-### `_sockaddr_in_size : Std::I64`
+### `_unsafe_from_sockaddr_in : Std::Ptr -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
 
-### `_unsafe_from_array : Std::Array Std::U8 -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
+Creates a `SocketAddress` from an allocated pointer to `struct sockaddr_in`.
 
 ### `get_ipaddress : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::IpAddress`
 
 Extracts an ip address from the socket address.
 
-### `get_port : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Std::I64`
+### `get_port : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::Port`
 
 Extracts a port number from the socket address.
 
@@ -395,18 +339,18 @@ If the port number is omitted, the default port number is 80.
 
 ## `namespace Minilib.Net.Tcp::SocketAddress::SocketAddress`
 
-### `@sockaddr_in : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Std::Array Std::U8`
+### `@dtor : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Std::FFI::Destructor Std::Ptr`
 
-Retrieves the field `sockaddr_in` from a value of `SocketAddress`.
+Retrieves the field `dtor` from a value of `SocketAddress`.
 
-### `act_sockaddr_in : [f : Std::Functor] (Std::Array Std::U8 -> f (Std::Array Std::U8)) -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> f Minilib.Net.Tcp::SocketAddress::SocketAddress`
+### `act_dtor : [f : Std::Functor] (Std::FFI::Destructor Std::Ptr -> f (Std::FFI::Destructor Std::Ptr)) -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> f Minilib.Net.Tcp::SocketAddress::SocketAddress`
 
-Updates a value of `SocketAddress` by applying a functorial action to field `sockaddr_in`.
+Updates a value of `SocketAddress` by applying a functorial action to field `dtor`.
 
-### `mod_sockaddr_in : (Std::Array Std::U8 -> Std::Array Std::U8) -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
+### `mod_dtor : (Std::FFI::Destructor Std::Ptr -> Std::FFI::Destructor Std::Ptr) -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
 
-Updates a value of `SocketAddress` by applying a function to field `sockaddr_in`.
+Updates a value of `SocketAddress` by applying a function to field `dtor`.
 
-### `set_sockaddr_in : Std::Array Std::U8 -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
+### `set_dtor : Std::FFI::Destructor Std::Ptr -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
 
-Updates a value of `SocketAddress` by setting field `sockaddr_in` to a specified one.
+Updates a value of `SocketAddress` by setting field `dtor` to a specified one.
