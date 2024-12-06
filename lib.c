@@ -1,3 +1,5 @@
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <netdb.h>
 #include <stdint.h>
 #include <string.h>
@@ -44,3 +46,10 @@ int minilib_net_resolve_ipaddress_v4(const char* hostname, uint8_t *out_addr, si
 
     return 0;
 }
+
+// Creates an internet TCP socket.
+int32_t minilib_net_make_tcp_socket()
+{
+    return (int32_t) socket(AF_INET, SOCK_STREAM, 0);
+}
+

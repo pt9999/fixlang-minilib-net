@@ -208,13 +208,6 @@ impl Socket: ToString {
 }
 
 namespace Socket {
-    // from /usr/include/x86_64-linux-gnu/bits/
-    _AF_INET: I32;
-    _AF_INET = 2_I32;
-
-    _SOCK_STREAM: I32;
-    _SOCK_STREAM = 1_I32;
-
     // Creates `Socket` from a file descriptor of a socket.
     // The socket will be automatically closed when `Socket` is deallocated.
     _unsafe_from_fd: I32 -> IOFail Socket;
@@ -245,7 +238,7 @@ namespace Socket {
     make_tcp_socket: () -> IOFail Socket;
     make_tcp_socket = |_| (
         pure();;    // make it lazy
-        let sockfd = *FFI_CALL_IO[I32 socket(I32, I32, I32), _AF_INET, _SOCK_STREAM, 0.to_I32].lift;
+        let sockfd = *FFI_CALL_IO[I32 minilib_net_make_tcp_socket()].lift;
         if sockfd < 0_I32 {
             throw $ "creating socket failed: " + *get_last_error.lift
         };
