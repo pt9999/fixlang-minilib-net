@@ -7,7 +7,7 @@ path = ".fixlang/deps/minilib-xml_0.1.4"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-xml.git"
-rev = "5b45b3e9e0fbdac2a398ffcff3dc5be3a4747c90"
+rev = "86c68eae1cb4ed536965104bd486c5c178932765"
 
 [[dependencies]]
 name = "minilib-text"
@@ -16,16 +16,16 @@ path = ".fixlang/deps/minilib-text_0.1.4"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-text.git"
-rev = "35d35fa1b901188fedaed497840992824bea92ac"
+rev = "3ced6599ff4dea71df79ee37d8fe5c46811c0b30"
 
 [[dependencies]]
 name = "minilib-common"
-version = "0.2.0"
-path = ".fixlang/deps/minilib-common_0.2.0"
+version = "0.2.1"
+path = ".fixlang/deps/minilib-common_0.2.1"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "64d2c9f324a2a64e6f6e313f3b845e85963420bc"
+rev = "291adcdc6cf4001353a808dcb162ed744f513147"
 
 [[dependencies]]
 name = "character"
@@ -52,7 +52,7 @@ path = ".fixlang/deps/minilib-binary_0.1.5"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "cd7bd35cecd59298ba1f98249d82006b5f31f4f5"
+rev = "aaea755ee9608d1c6d10201d22b0a7e0dd286166"
 
 [[dependencies]]
 name = "minilib-io"
