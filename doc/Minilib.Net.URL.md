@@ -90,66 +90,6 @@ of MDN web docs.
 
 ## `namespace Minilib.Net.URL::URL`
 
-### `@host : Minilib.Net.URL::URL -> Std::String`
-
-Retrieves the field `host` from a value of `URL`.
-
-### `@path : Minilib.Net.URL::URL -> Std::String`
-
-Retrieves the field `path` from a value of `URL`.
-
-### `@port : Minilib.Net.URL::URL -> Std::String`
-
-Retrieves the field `port` from a value of `URL`.
-
-### `@scheme : Minilib.Net.URL::URL -> Std::String`
-
-Retrieves the field `scheme` from a value of `URL`.
-
-### `@url : Minilib.Net.URL::URL -> Std::String`
-
-Retrieves the field `url` from a value of `URL`.
-
-### `act_host : [f : Std::Functor] (Std::String -> f Std::String) -> Minilib.Net.URL::URL -> f Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a functorial action to field `host`.
-
-### `act_path : [f : Std::Functor] (Std::String -> f Std::String) -> Minilib.Net.URL::URL -> f Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a functorial action to field `path`.
-
-### `act_port : [f : Std::Functor] (Std::String -> f Std::String) -> Minilib.Net.URL::URL -> f Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a functorial action to field `port`.
-
-### `act_scheme : [f : Std::Functor] (Std::String -> f Std::String) -> Minilib.Net.URL::URL -> f Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a functorial action to field `scheme`.
-
-### `act_url : [f : Std::Functor] (Std::String -> f Std::String) -> Minilib.Net.URL::URL -> f Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a functorial action to field `url`.
-
-### `mod_host : (Std::String -> Std::String) -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a function to field `host`.
-
-### `mod_path : (Std::String -> Std::String) -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a function to field `path`.
-
-### `mod_port : (Std::String -> Std::String) -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a function to field `port`.
-
-### `mod_scheme : (Std::String -> Std::String) -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a function to field `scheme`.
-
-### `mod_url : (Std::String -> Std::String) -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by applying a function to field `url`.
-
 ### `parse : Std::String -> Std::Result Std::String Minilib.Net.URL::URL`
 
 Parses a string as a URL.
@@ -161,23 +101,3 @@ If the port part is omitted, a default value ("443" if scheme == "https", "80" o
 is used as a port.
 The path part should be starts with "/".
 If the path part is omitted, a default value ("/") is used as a path.
-
-### `set_host : Std::String -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by setting field `host` to a specified one.
-
-### `set_path : Std::String -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by setting field `path` to a specified one.
-
-### `set_port : Std::String -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by setting field `port` to a specified one.
-
-### `set_scheme : Std::String -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by setting field `scheme` to a specified one.
-
-### `set_url : Std::String -> Minilib.Net.URL::URL -> Minilib.Net.URL::URL`
-
-Updates a value of `URL` by setting field `url` to a specified one.

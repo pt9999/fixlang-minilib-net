@@ -37,22 +37,6 @@ it reads one request from the socket, processes it, and writes a response to the
 
 ## `namespace Minilib.Net.HttpServer::App`
 
-### `@backlog : Minilib.Net.HttpServer::App -> Std::I64`
-
-Retrieves the field `backlog` from a value of `App`.
-
-### `@router : Minilib.Net.HttpServer::App -> Minilib.Net.Router::Router (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response)`
-
-Retrieves the field `router` from a value of `App`.
-
-### `act_backlog : [f : Std::Functor] (Std::I64 -> f Std::I64) -> Minilib.Net.HttpServer::App -> f Minilib.Net.HttpServer::App`
-
-Updates a value of `App` by applying a functorial action to field `backlog`.
-
-### `act_router : [f : Std::Functor] (Minilib.Net.Router::Router (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response) -> f (Minilib.Net.Router::Router (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response))) -> Minilib.Net.HttpServer::App -> f Minilib.Net.HttpServer::App`
-
-Updates a value of `App` by applying a functorial action to field `router`.
-
 ### `insert_handler : Std::String -> Std::String -> (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response) -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
 
 `app.insert_handler(method, path, handler)` inserts a handler
@@ -70,39 +54,15 @@ abnormal program termination when writing to a closed socket.
 
 `App::make()` creates an empty application.
 
-### `mod_backlog : (Std::I64 -> Std::I64) -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
-
-Updates a value of `App` by applying a function to field `backlog`.
-
-### `mod_router : (Minilib.Net.Router::Router (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response) -> Minilib.Net.Router::Router (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response)) -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
-
-Updates a value of `App` by applying a function to field `router`.
-
 ### `on : Std::String -> Std::String -> (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response) -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
 
 Alias of `insert_handler`.
 
-### `set_backlog : Std::I64 -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
-
-Updates a value of `App` by setting field `backlog` to a specified one.
-
-### `set_router : Minilib.Net.Router::Router (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response) -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
-
-Updates a value of `App` by setting field `router` to a specified one.
-
 ## `namespace Minilib.Net.HttpServer::Worker`
-
-### `@app : Minilib.Net.HttpServer::Worker -> Minilib.Net.HttpServer::App`
-
-Retrieves the field `app` from a value of `Worker`.
 
 ### `_finally : (() -> Std::IO ()) -> Std::IO::IOFail a -> Std::IO::IOFail a`
 
 ### `_not_found_handler : Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response`
-
-### `act_app : [f : Std::Functor] (Minilib.Net.HttpServer::App -> f Minilib.Net.HttpServer::App) -> Minilib.Net.HttpServer::Worker -> f Minilib.Net.HttpServer::Worker`
-
-Updates a value of `Worker` by applying a functorial action to field `app`.
 
 ### `handle : Std::IO::IOHandle -> Std::String -> Minilib.Net.HttpServer::Worker -> Std::IO ()`
 
@@ -112,11 +72,3 @@ then finds the request handler for the request, and call that handler.
 ### `make : Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::Worker`
 
 Creates a worker for the application.
-
-### `mod_app : (Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App) -> Minilib.Net.HttpServer::Worker -> Minilib.Net.HttpServer::Worker`
-
-Updates a value of `Worker` by applying a function to field `app`.
-
-### `set_app : Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::Worker -> Minilib.Net.HttpServer::Worker`
-
-Updates a value of `Worker` by setting field `app` to a specified one.

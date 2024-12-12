@@ -96,39 +96,7 @@ for the socket may grow.
 
 ## `namespace Minilib.Net.Tcp::BufferedSocket`
 
-### `@eof : Minilib.Net.Tcp::BufferedSocket -> Std::Bool`
-
-Retrieves the field `eof` from a value of `BufferedSocket`.
-
-### `@read_buf : Minilib.Net.Tcp::BufferedSocket -> Std::Array Std::U8`
-
-Retrieves the field `read_buf` from a value of `BufferedSocket`.
-
-### `@socket : Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::Socket`
-
-Retrieves the field `socket` from a value of `BufferedSocket`.
-
-### `@write_buf : Minilib.Net.Tcp::BufferedSocket -> Std::Array Std::U8`
-
-Retrieves the field `write_buf` from a value of `BufferedSocket`.
-
 ### `_BUFSIZE : Std::I64`
-
-### `act_eof : [f : Std::Functor] (Std::Bool -> f Std::Bool) -> Minilib.Net.Tcp::BufferedSocket -> f Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a functorial action to field `eof`.
-
-### `act_read_buf : [f : Std::Functor] (Std::Array Std::U8 -> f (Std::Array Std::U8)) -> Minilib.Net.Tcp::BufferedSocket -> f Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a functorial action to field `read_buf`.
-
-### `act_socket : [f : Std::Functor] (Minilib.Net.Tcp::Socket -> f Minilib.Net.Tcp::Socket) -> Minilib.Net.Tcp::BufferedSocket -> f Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a functorial action to field `socket`.
-
-### `act_write_buf : [f : Std::Functor] (Std::Array Std::U8 -> f (Std::Array Std::U8)) -> Minilib.Net.Tcp::BufferedSocket -> f Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a functorial action to field `write_buf`.
 
 ### `flush : Minilib.Net.Tcp::BufferedSocket -> Std::IO::IOFail Minilib.Net.Tcp::BufferedSocket`
 
@@ -138,22 +106,6 @@ Sends the contents of the writer buffer to the socket and cleans the write buffe
 
 Makes a `BufferedSocket` from a `Socket`.
 
-### `mod_eof : (Std::Bool -> Std::Bool) -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a function to field `eof`.
-
-### `mod_read_buf : (Std::Array Std::U8 -> Std::Array Std::U8) -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a function to field `read_buf`.
-
-### `mod_socket : (Minilib.Net.Tcp::Socket -> Minilib.Net.Tcp::Socket) -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a function to field `socket`.
-
-### `mod_write_buf : (Std::Array Std::U8 -> Std::Array Std::U8) -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by applying a function to field `write_buf`.
-
 ### `read_line : Minilib.Net.Tcp::BufferedSocket -> Std::IO::IOFail (Std::String, Minilib.Net.Tcp::BufferedSocket)`
 
 Reads out a line (ie. a string that ends with a newline) from the read buffer.
@@ -162,22 +114,6 @@ _BUFSIZE from the socket, and search for a newline again.
 When the connection is closed, the return value may or may not contain a newline.
 The next call of `read_line()` returns an empty string, which represents that the connection is closed.
 
-### `set_eof : Std::Bool -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by setting field `eof` to a specified one.
-
-### `set_read_buf : Std::Array Std::U8 -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by setting field `read_buf` to a specified one.
-
-### `set_socket : Minilib.Net.Tcp::Socket -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by setting field `socket` to a specified one.
-
-### `set_write_buf : Std::Array Std::U8 -> Minilib.Net.Tcp::BufferedSocket -> Minilib.Net.Tcp::BufferedSocket`
-
-Updates a value of `BufferedSocket` by setting field `write_buf` to a specified one.
-
 ### `write_str : Std::String -> Minilib.Net.Tcp::BufferedSocket -> Std::IO::IOFail Minilib.Net.Tcp::BufferedSocket`
 
 Writes a string to the write buffer. The contents of the write buffer is not sent
@@ -185,15 +121,7 @@ until the size of the write buffer is equal to or greater than `_BUFSIZE`, or `f
 
 ## `namespace Minilib.Net.Tcp::IpAddress`
 
-### `@addr : Minilib.Net.Tcp::IpAddress -> Std::Array Std::U8`
-
-Retrieves the field `addr` from a value of `IpAddress`.
-
 ### `_resolve_ipaddress_v4 : Std::String -> Std::IO::IOFail Minilib.Net.Tcp::IpAddress`
-
-### `act_addr : [f : Std::Functor] (Std::Array Std::U8 -> f (Std::Array Std::U8)) -> Minilib.Net.Tcp::IpAddress -> f Minilib.Net.Tcp::IpAddress`
-
-Updates a value of `IpAddress` by applying a functorial action to field `addr`.
 
 ### `from_U32 : Std::U32 -> Minilib.Net.Tcp::IpAddress`
 
@@ -203,47 +131,19 @@ Converts U32 to an `IpAddress`, for example 0x7f000001_U32 -> 127.0.0.1.
 
 Converts a byte array to an `IpAddress`. The length of the byte array must be 4.
 
-### `mod_addr : (Std::Array Std::U8 -> Std::Array Std::U8) -> Minilib.Net.Tcp::IpAddress -> Minilib.Net.Tcp::IpAddress`
-
-Updates a value of `IpAddress` by applying a function to field `addr`.
-
 ### `resolve : Std::String -> Std::IO::IOFail Minilib.Net.Tcp::IpAddress`
 
 Resolve a hostname such as "127.0.0.1" or "www.example.com".
-
-### `set_addr : Std::Array Std::U8 -> Minilib.Net.Tcp::IpAddress -> Minilib.Net.Tcp::IpAddress`
-
-Updates a value of `IpAddress` by setting field `addr` to a specified one.
 
 ### `to_U32 : Minilib.Net.Tcp::IpAddress -> Std::U32`
 
 ## `namespace Minilib.Net.Tcp::Port`
 
-### `@port : Minilib.Net.Tcp::Port -> Std::U16`
-
-Retrieves the field `port` from a value of `Port`.
-
-### `act_port : [f : Std::Functor] (Std::U16 -> f Std::U16) -> Minilib.Net.Tcp::Port -> f Minilib.Net.Tcp::Port`
-
-Updates a value of `Port` by applying a functorial action to field `port`.
-
 ### `from_U16 : Std::U16 -> Minilib.Net.Tcp::Port`
-
-### `mod_port : (Std::U16 -> Std::U16) -> Minilib.Net.Tcp::Port -> Minilib.Net.Tcp::Port`
-
-Updates a value of `Port` by applying a function to field `port`.
-
-### `set_port : Std::U16 -> Minilib.Net.Tcp::Port -> Minilib.Net.Tcp::Port`
-
-Updates a value of `Port` by setting field `port` to a specified one.
 
 ### `to_U16 : Minilib.Net.Tcp::Port -> Std::U16`
 
 ## `namespace Minilib.Net.Tcp::Socket`
-
-### `@data : Minilib.Net.Tcp::Socket -> Std::FFI::Destructor Std::I32`
-
-Retrieves the field `data` from a value of `Socket`.
 
 ### `_unsafe_from_fd : Std::I32 -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
 
@@ -258,10 +158,6 @@ and returns a socket of accepted connection and the remote socket address.
 ### `accept_fd : Minilib.Net.Tcp::Socket -> Std::IO::IOFail (Std::I32, Minilib.Net.Tcp::SocketAddress::SocketAddress)`
 
 Same as `accept()`, except that it returns the accepted socket's file descriptor instead of `Socket`.
-
-### `act_data : [f : Std::Functor] (Std::FFI::Destructor Std::I32 -> f (Std::FFI::Destructor Std::I32)) -> Minilib.Net.Tcp::Socket -> f Minilib.Net.Tcp::Socket`
-
-Updates a value of `Socket` by applying a functorial action to field `data`.
 
 ### `bind : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::Socket -> Std::IO::IOFail ()`
 
@@ -285,10 +181,6 @@ The first argument (backlog) is the maximum length to which the queue of pending
 Creates new tcp socket.
 The socket will be automatically closed when `Socket` is deallocated.
 
-### `mod_data : (Std::FFI::Destructor Std::I32 -> Std::FFI::Destructor Std::I32) -> Minilib.Net.Tcp::Socket -> Minilib.Net.Tcp::Socket`
-
-Updates a value of `Socket` by applying a function to field `data`.
-
 ### `recv : Std::I64 -> Minilib.Net.Tcp::Socket -> Std::IO::IOFail (Std::Array Std::U8)`
 
 Receives messages from a socket.
@@ -302,10 +194,6 @@ When the socket has been shutdown, the return value will be 0.
 Transmits a message to another socket.
 May be used only when the socket is in a connected state.
 Returns the number of bytes sent.
-
-### `set_data : Std::FFI::Destructor Std::I32 -> Minilib.Net.Tcp::Socket -> Minilib.Net.Tcp::Socket`
-
-Updates a value of `Socket` by setting field `data` to a specified one.
 
 ### `setsockopt_reuseaddr : Minilib.Net.Tcp::Socket -> Std::IO::IOFail ()`
 
@@ -336,21 +224,3 @@ the port number.
 The first argument is `{host}:{port}`, where `{host}` is an IP Address (eg. `192.168.0.1`),
 or a FQDN host name (eg. `www.example.com`), and `{port}` is a port number (eg. `8080`).
 If the port number is omitted, the default port number is 80.
-
-## `namespace Minilib.Net.Tcp::SocketAddress::SocketAddress`
-
-### `@dtor : Minilib.Net.Tcp::SocketAddress::SocketAddress -> Std::FFI::Destructor Std::Ptr`
-
-Retrieves the field `dtor` from a value of `SocketAddress`.
-
-### `act_dtor : [f : Std::Functor] (Std::FFI::Destructor Std::Ptr -> f (Std::FFI::Destructor Std::Ptr)) -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> f Minilib.Net.Tcp::SocketAddress::SocketAddress`
-
-Updates a value of `SocketAddress` by applying a functorial action to field `dtor`.
-
-### `mod_dtor : (Std::FFI::Destructor Std::Ptr -> Std::FFI::Destructor Std::Ptr) -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
-
-Updates a value of `SocketAddress` by applying a function to field `dtor`.
-
-### `set_dtor : Std::FFI::Destructor Std::Ptr -> Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
-
-Updates a value of `SocketAddress` by setting field `dtor` to a specified one.

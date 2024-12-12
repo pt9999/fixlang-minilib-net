@@ -41,14 +41,6 @@ Router is a mapping from a method name and a path to a request handler.
 
 ## `namespace Minilib.Net.Router::Router`
 
-### `@root : Minilib.Net.Router::Router h -> Minilib.Net.Router::RouterNode h`
-
-Retrieves the field `root` from a value of `Router`.
-
-### `act_root : [f : Std::Functor] (Minilib.Net.Router::RouterNode h -> f (Minilib.Net.Router::RouterNode h)) -> Minilib.Net.Router::Router h -> f (Minilib.Net.Router::Router h)`
-
-Updates a value of `Router` by applying a functorial action to field `root`.
-
 ### `empty : Minilib.Net.Router::Router h`
 
 An empty router.
@@ -62,23 +54,7 @@ An empty router.
 `router.insert(method, path, handler)` tells that `method` and  path
 should be mapped to this handler.
 
-### `mod_root : (Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h) -> Minilib.Net.Router::Router h -> Minilib.Net.Router::Router h`
-
-Updates a value of `Router` by applying a function to field `root`.
-
-### `set_root : Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::Router h -> Minilib.Net.Router::Router h`
-
-Updates a value of `Router` by setting field `root` to a specified one.
-
 ## `namespace Minilib.Net.Router::RouterEntry`
-
-### `@map : Minilib.Net.Router::RouterEntry h -> HashMap::HashMap Std::String h`
-
-Retrieves the field `map` from a value of `RouterEntry`.
-
-### `act_map : [f : Std::Functor] (HashMap::HashMap Std::String h -> f (HashMap::HashMap Std::String h)) -> Minilib.Net.Router::RouterEntry h -> f (Minilib.Net.Router::RouterEntry h)`
-
-Updates a value of `RouterEntry` by applying a functorial action to field `map`.
 
 ### `empty : Minilib.Net.Router::RouterEntry h`
 
@@ -92,35 +68,11 @@ An empty entry.
 
 Returns true iff it is an empty entry.
 
-### `mod_map : (HashMap::HashMap Std::String h -> HashMap::HashMap Std::String h) -> Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h`
-
-Updates a value of `RouterEntry` by applying a function to field `map`.
-
-### `set_map : HashMap::HashMap Std::String h -> Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h`
-
-Updates a value of `RouterEntry` by setting field `map` to a specified one.
-
 ### `update : Std::String -> h -> Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h`
 
 `router_entry.update(method, handler)` sets the handler of the method `method` to `handler`.
 
 ## `namespace Minilib.Net.Router::RouterNode`
-
-### `@directory : Minilib.Net.Router::RouterNode h -> HashMap::HashMap Std::String (Minilib.Net.Router::RouterNode h)`
-
-Retrieves the field `directory` from a value of `RouterNode`.
-
-### `@entry : Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterEntry h`
-
-Retrieves the field `entry` from a value of `RouterNode`.
-
-### `act_directory : [f : Std::Functor] (HashMap::HashMap Std::String (Minilib.Net.Router::RouterNode h) -> f (HashMap::HashMap Std::String (Minilib.Net.Router::RouterNode h))) -> Minilib.Net.Router::RouterNode h -> f (Minilib.Net.Router::RouterNode h)`
-
-Updates a value of `RouterNode` by applying a functorial action to field `directory`.
-
-### `act_entry : [f : Std::Functor] (Minilib.Net.Router::RouterEntry h -> f (Minilib.Net.Router::RouterEntry h)) -> Minilib.Net.Router::RouterNode h -> f (Minilib.Net.Router::RouterNode h)`
-
-Updates a value of `RouterNode` by applying a functorial action to field `entry`.
 
 ### `create : Std::Iterator Std::String -> (Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h) -> Minilib.Net.Router::RouterNode h`
 
@@ -133,22 +85,6 @@ An empty router node.
 ### `find : Std::Iterator Std::String -> Minilib.Net.Router::RouterNode h -> Std::Option (Minilib.Net.Router::RouterEntry h)`
 
 Finds the entry in the node following the path from the current node.
-
-### `mod_directory : (HashMap::HashMap Std::String (Minilib.Net.Router::RouterNode h) -> HashMap::HashMap Std::String (Minilib.Net.Router::RouterNode h)) -> Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h`
-
-Updates a value of `RouterNode` by applying a function to field `directory`.
-
-### `mod_entry : (Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h) -> Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h`
-
-Updates a value of `RouterNode` by applying a function to field `entry`.
-
-### `set_directory : HashMap::HashMap Std::String (Minilib.Net.Router::RouterNode h) -> Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h`
-
-Updates a value of `RouterNode` by setting field `directory` to a specified one.
-
-### `set_entry : Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h`
-
-Updates a value of `RouterNode` by setting field `entry` to a specified one.
 
 ### `show : [h : Std::ToString] Std::String -> Minilib.Net.Router::RouterNode h -> Std::IO ()`
 
