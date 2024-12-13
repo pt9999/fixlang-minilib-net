@@ -3,7 +3,7 @@ module TcpTest;
 import AsyncTask;
 
 import Minilib.Net.Tcp;
-import Minilib.Monad.FunctorM;
+import Minilib.Trait.Traversable;
 import Minilib.Text.StringEx;
 import Minilib.Testing.UnitTest;
 
