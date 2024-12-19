@@ -240,6 +240,7 @@ namespace Socket {
         //eval debug_eprintln("Socket::_unsafe_from_fd: fd=" + fd.to_string);
         pure $ Socket {
             data: Destructor::make(fd, |fd|
+                if fd == -1.to_CInt { pure $ fd };
                 //eval debug_eprintln ("closing socket fd: " + fd.to_string);
                 let res = *FFI_CALL_IO[CInt close(CInt), fd];
                 when(res.to_I64 != 0,
@@ -248,6 +249,11 @@ namespace Socket {
                 pure $ -1.to_CInt
             )
         }
+    );
+
+    close: Socket -> IOFail Socket;
+    close = |socket| (
+        pure $ socket.set_data(Destructor::make(-1.to_CInt, |fd| pure $ fd))
     );
 
     // Call an IO action with a file descriptor of a socket.

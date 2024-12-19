@@ -1,0 +1,67 @@
+module Main;
+
+import AsyncTask;
+
+import Minilib.Net.HttpServer;
+import Minilib.Net.Request;
+import Minilib.Net.Tcp;
+import Minilib.Trait.Traversable;
+import Minilib.Testing.UnitTest;
+
+test_server_client: TestCase;
+test_server_client = (
+    make_test("test_server_client") $ |_|
+    // TODO: use ephemeral port number. (https://stackoverflow.com/questions/1075399/how-to-bind-to-any-available-port)
+    let host_port = "127.0.0.1:32988";
+    let var_server_state = *Var::make("").lift;
+    let server: IOFail () = do {
+        let var_socket: Var (Option Socket) = *Var::make(none()).lift;
+        let app = App::make().on("GET", "/", |req, res|
+            let res = *res.content_type("text").write_str("Hello");
+            let socket = *var_socket.get.lift;
+            let socket = *socket.as_some.close;
+            pure $ res
+        );
+        let app = *app.listen(host_port);
+        var_server_state.Var::set("started").lift;;
+        pure $ ok()
+    }.try(|errmsg|
+        // In case server did not start properly
+        var_server_state.Var::set("error");;
+        pure $ err(errmsg)
+    ).from_io_result;
+    let client: IOFail () = do {
+        var_server_state.Var::wait(|state| state != "").lift;;
+        // To avoid deadlock, check if the server started successfully.
+        if *var_server_state.get.lift == "error" {
+            throw $ "server error"
+        };
+        let sock = *Tcp::connect_to_tcp_server(host_port);
+        let bufsock = BufferedSocket::make(sock);
+        let bufsock = *bufsock.write_str("GET / HTTP/1.0\n\n");
+        let bufsock = *bufsock.flush;
+        loop_m(
+            bufsock, |bufsock|
+            let (line, bufsock) = *bufsock.read_line;
+            if line == "" { break_m $ () };
+            println(line).lift;;
+            continue_m $ bufsock
+        );;
+        //eval sock;
+        pure()
+    };
+    let iofail_array: Array (IOFail ()) = [server, client];
+    let io_array: Array (IO (Result ErrMsg ())) = iofail_array.map(to_result);
+    let task_array: Array (IOTask (Result ErrMsg ())) = *io_array.map_m(AsyncIOTask::make).lift;
+    let res_array: Array (Result ErrMsg ()) = *task_array.map_m(get).lift;
+    assert_equal("res_array", [ok(), ok()], res_array)
+);
+
+main: IO ();
+main = (
+    [
+        test_server_client,
+        TestCase::empty
+    ]
+    .run_test_driver
+);

@@ -7,6 +7,7 @@ module Minilib.Net.HttpServer;
 import AsyncTask;
 
 import Minilib.IO.FileSystem;
+import Minilib.IO.Signal;
 import Minilib.Net.Request;
 import Minilib.Net.Router;
 import Minilib.Net.Tcp;
@@ -76,8 +77,20 @@ namespace Worker {
     );
 }
 
+/*
+type ServerControl = unbox union {
+    stop: (),
+};
+
+type Listening = unbox struct {
+    socket: Socket,
+    task: IOTask (Result ErrMsg ()),
+};
+*/
+
 // This type represents an application.
 type App = unbox struct {
+    socket: Option Socket,
     router: Router RequestHandler,      // An HTTP request router
     backlog: I64                        // Number of backlogs used for `listen()`
 };
@@ -87,6 +100,7 @@ namespace App {
     make: () -> App;
     make = |_| (
         App {
+            socket: none(),
             router: Router::empty,
             backlog: 10
         }
@@ -113,11 +127,14 @@ namespace App {
     listen: String -> App -> IOFail App;
     listen = |server_host_port, app| (
         let _ = *pure();   // make it lazy
-
+        if app.@socket.is_some {
+            throw $ "server has been started already"
+        };
         // Set the signal handler for SIGPIPE to SIG_IGN.
-        let _ = FFI_CALL[Ptr signal(I32, I64), /* SIGPIPE = */ 13_I32, /* SIG_IGN = */ 1_I64];
+        let _ = *set_signal_handler("SIGPIPE", "SIG_IGN");
 
         let socket = *listen_tcp_server(server_host_port, app.@backlog);
+        let app = app.set_socket(some $ socket);
         let _ = *eprintln ("Listening on " + server_host_port).lift;
         loop_m(
             app, |app|
