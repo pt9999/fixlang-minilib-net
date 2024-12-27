@@ -2,30 +2,30 @@ proj_file_hash = "77bef2e67071209e0f91f36bd5154219"
 
 [[dependencies]]
 name = "minilib-xml"
-version = "0.1.5"
-path = ".fixlang/deps/minilib-xml_0.1.5"
+version = "0.1.6"
+path = ".fixlang/deps/minilib-xml_0.1.6"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-xml.git"
-rev = "71301c2495bced758fcd6e1cbe6b86954c9cd984"
+rev = "7876a20ffdb8537850c1f14cfadc5352bd2f5204"
 
 [[dependencies]]
 name = "minilib-text"
-version = "0.1.5"
-path = ".fixlang/deps/minilib-text_0.1.5"
+version = "0.1.6"
+path = ".fixlang/deps/minilib-text_0.1.6"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-text.git"
-rev = "3baf30abf11d64e213375c284fad155cd6aa3585"
+rev = "4ea8e195c05638c0b562b89afabdd1595a584b21"
 
 [[dependencies]]
 name = "minilib-common"
-version = "0.3.0"
-path = ".fixlang/deps/minilib-common_0.3.0"
+version = "0.3.1"
+path = ".fixlang/deps/minilib-common_0.3.1"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "e9ab46a77d52cc5f6177c6dbe0fed8ebfa5ac73d"
+rev = "6723416967dda67aecf68c872c824dcec6878e2b"
 
 [[dependencies]]
 name = "character"
@@ -47,12 +47,12 @@ rev = "0df92cf1c3ffc148d658c1a554c94105aef13520"
 
 [[dependencies]]
 name = "minilib-binary"
-version = "0.1.6"
-path = ".fixlang/deps/minilib-binary_0.1.6"
+version = "0.1.7"
+path = ".fixlang/deps/minilib-binary_0.1.7"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "86ec8949cd8fc6eaeb7008d722d061f466892383"
+rev = "c39190c6444373ecef9784a548f791425e3e951b"
 
 [[dependencies]]
 name = "asynctask"
@@ -65,12 +65,12 @@ rev = "6b36519aade839ecb28ec236bc4cabe37416f398"
 
 [[dependencies]]
 name = "minilib-io"
-version = "0.3.3"
-path = ".fixlang/deps/minilib-io_0.3.3"
+version = "0.3.4"
+path = ".fixlang/deps/minilib-io_0.3.4"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-io.git"
-rev = "92554271dbcc15f9d3054f442ddd0806591f6040"
+rev = "5080567a0283ace062ab1bd6473057b1a7b94bb6"
 
 [[dependencies]]
 name = "hashmap"
