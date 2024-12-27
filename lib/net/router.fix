@@ -113,7 +113,7 @@ namespace RouterNode {
         );
         let print_directory = (
             let ends_with: String -> String -> Bool = |e,s| (
-                s.substring(s.get_size - e.get_size, s.get_size) == e
+                s.get_sub(s.get_size - e.get_size, s.get_size) == e
             );
             let slash = if prefix.ends_with("/") { "" } else { "/" };
             node.@directory.to_iter.fold_m(
