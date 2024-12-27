@@ -163,7 +163,7 @@ namespace Request {
 
     _parse_request_line: String -> Result ErrMsg (String, String, String);
     _parse_request_line = |line| (
-        let fields = line.split_ex(" ").to_array;
+        let fields = line.split(" ").to_array;
         if fields.get_size != 3 {
             // TODO: Chrome often sends an empty line that causes "ERROR: Invalid request line: ``"
             err $ "Invalid request line: `" + line + "`"
@@ -180,7 +180,7 @@ namespace Request {
 
     _parse_query_string: String -> IOFail (Array (String, String));
     _parse_query_string = |query| (
-        query.split_ex("&").fold_m(
+        query.split("&").fold_m(
             Array::empty(0), |array, qstr|
             if qstr == "" { pure $ array };
             let (name, value) = qstr.split_first("=");

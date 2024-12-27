@@ -145,14 +145,14 @@ namespace Router {
     // should be mapped to this handler.
     insert: String -> String -> h -> Router h -> Router h;
     insert = |method, path, handler, router| (
-        let path: Iterator String = path.split_ex("/").filter(|s| s != "");
+        let path: Iterator String = path.split("/").filter(|s| s != "");
         router.mod_root(|root| root.update(path, |entry| entry.update(method, handler)))
     );
 
     // `router.find(method, path)` finds the handler that matches `method` and `path`.
     find: String -> String -> Router h -> Option h;
     find = |method, path, router| (
-        let path: Iterator String = path.split_ex("/").filter(|s| s != "");
+        let path: Iterator String = path.split("/").filter(|s| s != "");
         let entry = *router.@root.find(path);
         entry.find(method)
     );
