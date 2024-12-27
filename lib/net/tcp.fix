@@ -398,7 +398,7 @@ namespace Socket {
             throw $ "recv failed: " + *get_last_error.lift
         };
         //eval debug_eprintln("recv success");
-        let bytes =  bytes.subarray(0, size.to_I64);
+        let bytes =  bytes.get_sub(0, size.to_I64);
         pure $ bytes
     );
 }
@@ -451,7 +451,7 @@ namespace BufferedSocket {
             let socket = bufsock.@socket;
             let size = *socket.send(bytes);
             //eval debug_eprintln("size="+size.to_string+ " to="+size_to_write.to_string);
-            let bytes = bytes.subarray(size, size_to_write);
+            let bytes = bytes.get_sub(size, size_to_write);
             let bufsock = bufsock.set_write_buf(bytes);
             continue_m $ bufsock
         )
@@ -475,9 +475,9 @@ namespace BufferedSocket {
             let index = read_buf.find_by(|b| b == '\n');
             if index.is_some {
                 let index = index.as_some;
-                let line = read_buf.subarray(0, index + 1);
+                let line = read_buf.get_sub(0, index + 1);
                 let line: String = line.push_back(0_U8)._unsafe_from_c_str;
-                let read_buf = read_buf.subarray(index + 1, read_buf.get_size);
+                let read_buf = read_buf.get_sub(index + 1, read_buf.get_size);
                 let bufsock = bufsock.set_read_buf(read_buf);
                 break_m $ (line, bufsock)
             };
