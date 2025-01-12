@@ -5,7 +5,7 @@ authors = ["pt9999"]
 license = "MIT"
 
 [build]
-opt_level = "separated"
+opt_level = "basic"
 files = [
     "lib/net/html.fix",
     "lib/net/http_server.fix",
@@ -18,7 +18,7 @@ objects = ["lib.o"]
 preliminary_commands = [["make", "lib.o"]]
 
 [build.test]
-opt_level = "separated"
+opt_level = "basic"
 files = [
     "tests/test.fix",
     "tests/net/html_test.fix",
