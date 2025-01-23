@@ -65,12 +65,12 @@ rev = "92e41277b8d3e6bfef7a336a15858decdad6b30b"
 
 [[dependencies]]
 name = "minilib-io"
-version = "0.3.6"
-path = ".fixlang/deps/minilib-io_0.3.6"
+version = "0.4.0"
+path = ".fixlang/deps/minilib-io_0.4.0"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-io.git"
-rev = "4b531d2cb11d878e1b8bc58e1c8fae12a1895d9a"
+rev = "8486013e006735e91053c09a8900fb50367c7528"
 
 [[dependencies]]
 name = "hashmap"
