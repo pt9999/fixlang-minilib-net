@@ -18,7 +18,7 @@ Note that the field name is case-insensitive (RFC9112).
 
 A collection of headers.
 
-#### field `iter : Std::Iterator (Std::String, Std::String)`
+#### field `iter : Std::Iterator Minilib.Net.Request::Header`
 
 ### `type Request = unbox struct { ...fields... }`
 
@@ -110,11 +110,11 @@ If a field with the same name already exists, it will be removed first.
 
 ## `namespace Minilib.Net.Request::Request`
 
-### `_parse_header : Std::String -> Std::Result Std::String (Std::String, Std::String)`
+### `_parse_header : Std::String -> Std::Result Std::ErrMsg (Std::String, Std::String)`
 
 ### `_parse_query_string : Std::String -> Std::IO::IOFail (Std::Array (Std::String, Std::String))`
 
-### `_parse_request_line : Std::String -> Std::Result Std::String (Std::String, Std::String, Std::String)`
+### `_parse_request_line : Std::String -> Std::Result Std::ErrMsg (Std::String, Std::String, Std::String)`
 
 ### `find_query : Std::String -> Minilib.Net.Request::Request -> Std::Option Std::String`
 

@@ -13,7 +13,7 @@ The interface is similar to `express` of Node.js.
 
 This type represents an application.
 
-#### field `router : Minilib.Net.Router::Router (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response)`
+#### field `router : Minilib.Net.Router::Router Minilib.Net.HttpServer::RequestHandler`
 
 #### field `backlog : Std::I64`
 
@@ -37,7 +37,7 @@ it reads one request from the socket, processes it, and writes a response to the
 
 ## `namespace Minilib.Net.HttpServer::App`
 
-### `insert_handler : Std::String -> Std::String -> (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response) -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
+### `insert_handler : Std::String -> Std::String -> Minilib.Net.HttpServer::RequestHandler -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
 
 `app.insert_handler(method, path, handler)` inserts a handler
 at `path` for `method`.
@@ -54,7 +54,7 @@ abnormal program termination when writing to a closed socket.
 
 `App::make()` creates an empty application.
 
-### `on : Std::String -> Std::String -> (Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response) -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
+### `on : Std::String -> Std::String -> Minilib.Net.HttpServer::RequestHandler -> Minilib.Net.HttpServer::App -> Minilib.Net.HttpServer::App`
 
 Alias of `insert_handler`.
 

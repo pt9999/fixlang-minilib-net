@@ -46,7 +46,7 @@ This type represents an IPv4 socket.
 It consists of a socket file descriptor.
 The socket file descripter is closed automatically when Socket is deallocated.
 
-#### field `data : Std::FFI::Destructor Std::I32`
+#### field `data : Std::FFI::Destructor Std::FFI::CInt`
 
 ## `namespace Minilib.Net.Tcp::SocketAddress`
 
@@ -145,7 +145,7 @@ Resolve a hostname such as "127.0.0.1" or "www.example.com".
 
 ## `namespace Minilib.Net.Tcp::Socket`
 
-### `_unsafe_from_fd : Std::I32 -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
+### `_unsafe_from_fd : Std::FFI::CInt -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
 
 Creates `Socket` from a file descriptor of a socket.
 The socket will be automatically closed when `Socket` is deallocated.
@@ -155,7 +155,7 @@ The socket will be automatically closed when `Socket` is deallocated.
 Waits for an incoming connection request. If an incoming connection arrives, accept it,
 and returns a socket of accepted connection and the remote socket address.
 
-### `accept_fd : Minilib.Net.Tcp::Socket -> Std::IO::IOFail (Std::I32, Minilib.Net.Tcp::SocketAddress::SocketAddress)`
+### `accept_fd : Minilib.Net.Tcp::Socket -> Std::IO::IOFail (Std::FFI::CInt, Minilib.Net.Tcp::SocketAddress::SocketAddress)`
 
 Same as `accept()`, except that it returns the accepted socket's file descriptor instead of `Socket`.
 
@@ -163,7 +163,7 @@ Same as `accept()`, except that it returns the accepted socket's file descriptor
 
 Assigns an IPv4 ip address and a port number to the socket.
 
-### `borrow_fd_io : (Std::I32 -> Std::IO a) -> Minilib.Net.Tcp::Socket -> Std::IO a`
+### `borrow_fd_io : (Std::FFI::CInt -> Std::IO a) -> Minilib.Net.Tcp::Socket -> Std::IO a`
 
 Call an IO action with a file descriptor of a socket.
 

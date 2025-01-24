@@ -22,7 +22,7 @@ A type that represents an HTML element.
 
 #### field `tag : Std::String`
 
-#### field `attrs : Std::Iterator (Std::String, Std::String)`
+#### field `attrs : Std::Iterator Minilib.Net.HTML::HTMLAttribute`
 
 #### field `children : Std::Array Minilib.Net.HTML::HTMLNode`
 
@@ -128,7 +128,7 @@ An empty `<tr>` element.
 
 ## `namespace Minilib.Net.HTML::HTMLAttribute`
 
-### `_output_html : Std::Array Std::String -> Std::Iterator (Std::String, Std::String) -> Std::Array Std::String`
+### `_output_html : Std::Array Std::String -> Std::Iterator Minilib.Net.HTML::HTMLAttribute -> Std::Array Std::String`
 
 `attrs._output_html` output the attributes as HTML string.
 

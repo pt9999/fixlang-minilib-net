@@ -48,7 +48,7 @@ Lookup table of characters that `decodeURIComponent()` should not unescape.
 
 Lookup table of characters that `decodeURI()` should not unescape.
 
-### `_decode_with : Std::Array Std::U8 -> Std::String -> Std::Result Std::String Std::String`
+### `_decode_with : Std::Array Std::U8 -> Std::String -> Std::Result Std::ErrMsg Std::String`
 
 Decodes a string with a table.
 
@@ -64,13 +64,13 @@ Lookup table of characters that `encodeURI()` should not escape.
 
 Encodes a string with a table.
 
-### `decodeURI : Std::String -> Std::Result Std::String Std::String`
+### `decodeURI : Std::String -> Std::Result Std::ErrMsg Std::String`
 
 Same as JavaScript `decodeURI()`.
 For details, see [decodeURI()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/decodeURI)
 of MDN web docs.
 
-### `decodeURIComponent : Std::String -> Std::Result Std::String Std::String`
+### `decodeURIComponent : Std::String -> Std::Result Std::ErrMsg Std::String`
 
 Same as JavaScript `decodeURIComponent()`.
 For details, see [decodeURIComponent()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent)
@@ -90,7 +90,7 @@ of MDN web docs.
 
 ## `namespace Minilib.Net.URL::URL`
 
-### `parse : Std::String -> Std::Result Std::String Minilib.Net.URL::URL`
+### `parse : Std::String -> Std::Result Std::ErrMsg Minilib.Net.URL::URL`
 
 Parses a string as a URL.
 Recognized format of a URL is:
