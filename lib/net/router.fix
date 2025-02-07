@@ -64,7 +64,7 @@ namespace RouterNode {
     };
 
     // `RouterNode::create(path, entry_updater)` creates a node.
-    create: Iterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h;
+    create: DynIterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h;
     create =  |path, entry_updater| (
         update(path, entry_updater, RouterNode::empty)
     ); 
@@ -72,12 +72,12 @@ namespace RouterNode {
     // `current_node.update(path, entry_updater)` updates the entry of a target node that is reached via `path` from `current_node`.
     // `path` is a path from `current_node` to the target node. If `path` is an empty iterator, `current_node` becomes the target node.
     // `entry_updater` is a function that updates the `RouterEntry` of the target node.  
-    update: Iterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h -> RouterNode h;
+    update: DynIterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h -> RouterNode h;
     update = |path, entry_updater, node| (
         if path.is_empty {
             node.mod_entry(entry_updater)
         };
-        let (child_name, child_path) = path.advance.as_some;
+        let (child_path, child_name) = path.advance.as_some;
         // eval assert (|_| "child name should not be an empty string", child_name != "");
         node.mod_directory(|dir|
             let child_node = dir.find(child_name).map_or(
@@ -89,12 +89,12 @@ namespace RouterNode {
     );
 
     // Finds the entry in the node following the path from the current node.
-    find: Iterator String -> RouterNode h -> Option (RouterEntry h);
+    find: DynIterator String -> RouterNode h -> Option (RouterEntry h);
     find = |path, node| (
         if path.is_empty {
             some $ node.@entry
         };
-        let (child_name, child_path) = path.advance.as_some;
+        let (child_path, child_name) = path.advance.as_some;
         // eval assert (|_| "child name should not be an empty string", child_name != "");
         // TODO: support for a pattern like `:id`
         let child_node = *node.@directory.find(child_name);
@@ -117,7 +117,7 @@ namespace RouterNode {
             );
             let slash = if prefix.ends_with("/") { "" } else { "/" };
             node.@directory.to_iter.fold_m(
-                (), |_, (child_name, child_node)|
+                (), |(child_name, child_node), _|
                 child_node.show(prefix + slash + child_name)
             )
         );
@@ -145,14 +145,14 @@ namespace Router {
     // should be mapped to this handler.
     insert: String -> String -> h -> Router h -> Router h;
     insert = |method, path, handler, router| (
-        let path: Iterator String = path.split("/").filter(|s| s != "");
+        let path: DynIterator String = path.split("/").filter(|s| s != "").to_dyn;
         router.mod_root(|root| root.update(path, |entry| entry.update(method, handler)))
     );
 
     // `router.find(method, path)` finds the handler that matches `method` and `path`.
     find: String -> String -> Router h -> Option h;
     find = |method, path, router| (
-        let path: Iterator String = path.split("/").filter(|s| s != "");
+        let path: DynIterator String = path.split("/").filter(|s| s != "").to_dyn;
         let entry = *router.@root.find(path);
         entry.find(method)
     );

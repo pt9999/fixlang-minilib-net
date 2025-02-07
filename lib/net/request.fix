@@ -18,7 +18,7 @@ type Header = (String, String);
 
 // A collection of headers.
 type Headers = unbox struct {
-    iter: Iterator Header
+    iter: DynIterator Header
 };
 
 impl Headers: ToString {
@@ -32,7 +32,7 @@ impl Headers: ToString {
 namespace Headers {
     // An empty collection of headers.
     empty: Headers;
-    empty = Headers { iter: Iterator::empty };
+    empty = Headers { iter: DynIterator::empty };
 
     // `headers.set(name, value)` sets the value of the field named `name` to `value`.
     // The field name is converted to lowercase.
@@ -42,7 +42,7 @@ namespace Headers {
         let name = name.to_lower;
         headers.mod_iter(|iter|
             iter.filter(|(n,v)| n != name)
-            .push_front((name, value))
+            .push_front((name, value)).to_dyn
         )
     );
 
@@ -53,7 +53,7 @@ namespace Headers {
     append = |name, value, headers| (
         let name = name.to_lower;
         headers.mod_iter(|iter|
-            iter.push_front((name, value))
+            iter.push_front((name, value)).to_dyn
         )
     );
 
@@ -63,7 +63,7 @@ namespace Headers {
     find = |name, headers| (
         let name = name.to_lower;
         headers.@iter.loop_iter(
-            none(), |_, (n, v)|
+            none(), |(n, v), _|
             if name == n {
                 break $ some(v)
             };
@@ -72,8 +72,8 @@ namespace Headers {
     );
 
     // `headers.to_iter` returns an iterator of headers.
-    to_iter: Headers -> Iterator (String, String);
-    to_iter = |headers| headers.@iter.reverse;
+    to_iter: Headers -> DynIterator (String, String);
+    to_iter = |headers| headers.@iter.reverse.to_dyn;
 }
 
 //------------------------------------------------------------------------------------
@@ -181,7 +181,7 @@ namespace Request {
     _parse_query_string: String -> IOFail (Array (String, String));
     _parse_query_string = |query| (
         query.split("&").fold_m(
-            Array::empty(0), |array, qstr|
+            Array::empty(0), |qstr, array|
             if qstr == "" { pure $ array };
             let (name, value) = qstr.split_first("=");
             let value = *decodeURIComponent(value).from_result;
@@ -263,7 +263,7 @@ namespace Response {
             res.@status.to_string + " " + res.@reason + "\r\n";
         let _ = *write_string(connection, status_line);
         let _ = *res.@headers.to_iter.fold_m(
-            (), |_, header|
+            (), |header, _|
             let (name, value) = header;
             write_string(connection, name + ": " + value + "\r\n")
         );

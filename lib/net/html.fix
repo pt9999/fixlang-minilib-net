@@ -132,7 +132,7 @@ type HTMLNode = box union {
 // A type that represents an HTML element.
 type HTMLElement = unbox struct {
     tag: String,                    // tag name
-    attrs: Iterator HTMLAttribute,  // attributes (reversed iterator)
+    attrs: DynIterator HTMLAttribute,  // attributes (reversed iterator)
     children: Array HTMLNode        // child nodes
 };
 
@@ -143,7 +143,7 @@ namespace HTMLElement {
     make = |tag| (
         HTMLElement {
             tag: tag,
-            attrs: Iterator::empty,
+            attrs: DynIterator::empty,
             children: Array::empty(0)
         }
     );
@@ -155,7 +155,7 @@ namespace HTMLElement {
     attr = |name, value, el| (
         el.mod_attrs(|attrs|
             attrs.filter(|(n,v)| n != name)
-                 .push_front((name,value))
+                 .push_front((name,value)).to_dyn
         )
     );
 
@@ -181,12 +181,12 @@ namespace HTMLElement {
     _output_html: Array String -> HTMLElement -> Array String;
     _output_html = |output, el| (
         let output = output.push_back("<" + el.@tag);
-        let output = el.@attrs.reverse._output_html(output);
+        let output = el.@attrs.reverse.to_dyn._output_html(output);
         let output = output.push_back(">");
         let child_sep = if el.@children.get_size >= 2 { "\n" } else { "" };
         let output = output.push_back(child_sep);
         let output = el.@children.to_iter.fold(
-            output, |output, node|
+            output, |node, output|
             if node.is_text_node {
                 output.push_back(escape_html(node.as_text_node))
                       .push_back(child_sep)
@@ -205,10 +205,10 @@ type HTMLAttribute = (String, String);
 
 namespace HTMLAttribute {
     // `attrs._output_html` output the attributes as HTML string.
-    _output_html: Array String -> Iterator HTMLAttribute -> Array String;
+    _output_html: Array String -> DynIterator HTMLAttribute -> Array String;
     _output_html = |output, attrs| (
         attrs.fold(
-            output, |output, (name, value)|
+            output, |(name, value), output|
             output
             .push_back(" ")
             .push_back(escape_html(name))
