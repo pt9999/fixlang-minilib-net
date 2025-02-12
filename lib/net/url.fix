@@ -84,9 +84,9 @@ namespace URI {
             ('0', '9')
         ];
         char_ranges.to_iter.fold(
-            Array::fill(256, 0_U8), |array, (min, max)|
+            Array::fill(256, 0_U8), |(min, max), array|
             Iterator::range(min.to_I64, max.to_I64 + 1).fold(
-                array, |array, c| array.set(c, 1_U8)
+                array, |c, array| array.set(c, 1_U8)
             )
         )
     );
@@ -95,7 +95,7 @@ namespace URI {
     _encodeURIComponent_table: Array U8;
     _encodeURIComponent_table = (
         "-_.!~*'()".get_bytes.pop_back.to_iter.fold(
-            _alpha_numeric, |array, c|
+            _alpha_numeric, |c, array|
             array.set(c.to_I64, 1_U8)
         )
     );
@@ -104,7 +104,7 @@ namespace URI {
     _encodeURI_table: Array U8;
     _encodeURI_table = (
         ";,/?:@&=+$".get_bytes.pop_back.to_iter.fold(
-            _encodeURIComponent_table, |array, c|
+            _encodeURIComponent_table, |c, array|
             array.set(c.to_I64, 1_U8)
         )
     );
@@ -120,7 +120,7 @@ namespace URI {
     _decodeURI_table = (
         // preserve_escape_table
         ";/?:@&=+$,#".get_bytes.pop_back.to_iter.fold(
-            _decodeURIComponent_table, |array, c|
+            _decodeURIComponent_table, |c, array|
             array.set(c.to_I64, 1_U8)
         )    
     );
@@ -130,7 +130,7 @@ namespace URI {
     _encode_with = |unescaped_table, str| (
         let input = str.get_bytes.pop_back;
         input.to_iter.fold(
-            Array::empty(input.get_size * 3), |output, c|
+            Array::empty(input.get_size * 3), |c, output|
             if unescaped_table.@(c.to_I64) != 0_U8 {
                 output.push_back(c)
             };
