@@ -18,7 +18,7 @@ Note that the field name is case-insensitive (RFC9112).
 
 A collection of headers.
 
-#### field `iter : Std::Iterator Minilib.Net.Request::Header`
+#### field `iter : Std::Iterator::DynIterator Minilib.Net.Request::Header`
 
 ### `type Request = unbox struct { ...fields... }`
 
@@ -104,7 +104,7 @@ The field name is converted to lowercase.
 The field name is converted to lowercase.
 If a field with the same name already exists, it will be removed first.
 
-### `to_iter : Minilib.Net.Request::Headers -> Std::Iterator (Std::String, Std::String)`
+### `to_iter : Minilib.Net.Request::Headers -> Std::Iterator::DynIterator (Std::String, Std::String)`
 
 `headers.to_iter` returns an iterator of headers.
 

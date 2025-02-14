@@ -74,7 +74,7 @@ Returns true iff it is an empty entry.
 
 ## `namespace Minilib.Net.Router::RouterNode`
 
-### `create : Std::Iterator Std::String -> (Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h) -> Minilib.Net.Router::RouterNode h`
+### `create : Std::Iterator::DynIterator Std::String -> (Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h) -> Minilib.Net.Router::RouterNode h`
 
 `RouterNode::create(path, entry_updater)` creates a node.
 
@@ -82,7 +82,7 @@ Returns true iff it is an empty entry.
 
 An empty router node.
 
-### `find : Std::Iterator Std::String -> Minilib.Net.Router::RouterNode h -> Std::Option (Minilib.Net.Router::RouterEntry h)`
+### `find : Std::Iterator::DynIterator Std::String -> Minilib.Net.Router::RouterNode h -> Std::Option (Minilib.Net.Router::RouterEntry h)`
 
 Finds the entry in the node following the path from the current node.
 
@@ -90,7 +90,7 @@ Finds the entry in the node following the path from the current node.
 
 TODO: use Writer monad
 
-### `update : Std::Iterator Std::String -> (Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h) -> Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h`
+### `update : Std::Iterator::DynIterator Std::String -> (Minilib.Net.Router::RouterEntry h -> Minilib.Net.Router::RouterEntry h) -> Minilib.Net.Router::RouterNode h -> Minilib.Net.Router::RouterNode h`
 
 `current_node.update(path, entry_updater)` updates the entry of a target node that is reached via `path` from `current_node`.
 `path` is a path from `current_node` to the target node. If `path` is an empty iterator, `current_node` becomes the target node.
