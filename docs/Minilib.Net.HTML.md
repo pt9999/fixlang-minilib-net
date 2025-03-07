@@ -1,188 +1,276 @@
-# `module Minilib.Net.HTML`
+# Minilib.Net.HTML
+
+Defined in minilib-net@0.5.2
 
 Simple HTML DOM model, as well as escaping/unescaping HTML special characters.
 
-# Types and aliases
+## Values
 
-## `namespace Minilib.Net.HTML`
+### namespace Minilib.Net.HTML::HTML
 
-### `type HTMLAttribute = (Std::String, Std::String)`
+#### body
 
-A type that represents name and value of an attribute.
-
-### `type HTMLDocument = unbox struct { ...fields... }`
-
-A type that represents an HTML document.
-
-#### field `html : Minilib.Net.HTML::HTMLElement`
-
-### `type HTMLElement = unbox struct { ...fields... }`
-
-A type that represents an HTML element.
-
-#### field `tag : Std::String`
-
-#### field `attrs : Std::Iterator::DynIterator Minilib.Net.HTML::HTMLAttribute`
-
-#### field `children : Std::Array Minilib.Net.HTML::HTMLNode`
-
-### `type HTMLNode = box union { ...variants... }`
-
-A type that represents an HTML node.
-
-#### variant `element : Minilib.Net.HTML::HTMLElement`
-
-#### variant `text_node : Std::String`
-
-# Traits and aliases
-
-# Trait implementations
-
-# Values
-
-## `namespace Minilib.Net.HTML::HTML`
-
-### `body : Minilib.Net.HTML::HTMLElement`
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<body>` element.
 
-### `button : Minilib.Net.HTML::HTMLElement`
+#### button
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<button>` element.
 
-### `div : Minilib.Net.HTML::HTMLElement`
+#### div
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<div>` element.
 
-### `div_ : Minilib.Net.HTML::HTMLElement`
+#### div_
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 to avoid ambiguity with Std::Div::div
 
-### `h1 : Minilib.Net.HTML::HTMLElement`
+#### h1
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<h1>` element.
 
-### `h2 : Minilib.Net.HTML::HTMLElement`
+#### h2
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<h2>` element.
 
-### `h3 : Minilib.Net.HTML::HTMLElement`
+#### h3
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<h3>` element.
 
-### `h4 : Minilib.Net.HTML::HTMLElement`
+#### h4
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<h4>` element.
 
-### `h5 : Minilib.Net.HTML::HTMLElement`
+#### h5
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<h5>` element.
 
-### `head : Minilib.Net.HTML::HTMLElement`
+#### head
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<head>` element.
 
-### `html : Minilib.Net.HTML::HTMLDocument`
+#### html
+
+Type: `Minilib.Net.HTML::HTMLDocument`
 
 An empty HTML document.
 
-### `input : Minilib.Net.HTML::HTMLElement`
+#### input
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<input>` element.
 
-### `meta : Minilib.Net.HTML::HTMLElement`
+#### meta
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<meta>` element.
 
-### `p : Minilib.Net.HTML::HTMLElement`
+#### p
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<p>` element.
 
-### `script : Minilib.Net.HTML::HTMLElement`
+#### script
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<script>` element.
 
-### `span : Minilib.Net.HTML::HTMLElement`
+#### span
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<span>` element.
 
-### `table : Minilib.Net.HTML::HTMLElement`
+#### table
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<table>` element.
 
-### `td : Minilib.Net.HTML::HTMLElement`
+#### td
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<td>` element.
 
-### `th : Minilib.Net.HTML::HTMLElement`
+#### th
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<th>` element.
 
-### `title : Minilib.Net.HTML::HTMLElement`
+#### title
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<title>` element.
 
-### `tr : Minilib.Net.HTML::HTMLElement`
+#### tr
+
+Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<tr>` element.
 
-## `namespace Minilib.Net.HTML::HTMLAttribute`
+### namespace Minilib.Net.HTML::HTMLAttribute
 
-### `_output_html : Std::Array Std::String -> Std::Iterator::DynIterator Minilib.Net.HTML::HTMLAttribute -> Std::Array Std::String`
+#### _output_html
+
+Type: `Std::Array Std::String -> Std::Iterator::DynIterator Minilib.Net.HTML::HTMLAttribute -> Std::Array Std::String`
 
 `attrs._output_html` output the attributes as HTML string.
 
-## `namespace Minilib.Net.HTML::HTMLDocument`
+### namespace Minilib.Net.HTML::HTMLDocument
 
-### `add : Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLDocument -> Minilib.Net.HTML::HTMLDocument`
+#### add
+
+Type: `Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLDocument -> Minilib.Net.HTML::HTMLDocument`
 
 Adds a child element to `<html>` element.
 
-### `empty : Minilib.Net.HTML::HTMLDocument`
+#### empty
+
+Type: `Minilib.Net.HTML::HTMLDocument`
 
 An empty HTML document.
 
-### `to_html : Minilib.Net.HTML::HTMLDocument -> Std::String`
+#### to_html
+
+Type: `Minilib.Net.HTML::HTMLDocument -> Std::String`
 
 Converts the HTML document to HTML string.
 
-## `namespace Minilib.Net.HTML::HTMLElement`
+### namespace Minilib.Net.HTML::HTMLElement
 
-### `_output_html : Std::Array Std::String -> Minilib.Net.HTML::HTMLElement -> Std::Array Std::String`
+#### _output_html
+
+Type: `Std::Array Std::String -> Minilib.Net.HTML::HTMLElement -> Std::Array Std::String`
 
 `el._output_html` output the element as HTML string.
 
-### `add : Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement`
+#### add
+
+Type: `Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement`
 
 `el.add(child)` adds a child element to `el`.
 
-### `attr : Std::String -> Std::String -> Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement`
+#### attr
+
+Type: `Std::String -> Std::String -> Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement`
 
 `el.attr(name,value)` adds an attribute to `el`.
 If an attribute of same name exists, it will be removed first.
 NOTE: validity of attribute names are not checked.
 
-### `make : Std::String -> Minilib.Net.HTML::HTMLElement`
+#### make
+
+Type: `Std::String -> Minilib.Net.HTML::HTMLElement`
 
 `HTMLElement::make(tag)` creates an empty element with specified tag name.
 
-### `text : Std::String -> Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement`
+#### text
+
+Type: `Std::String -> Minilib.Net.HTML::HTMLElement -> Minilib.Net.HTML::HTMLElement`
 
 `el.text(txt)` adds a text node to `el`.
 
-### `to_html : Minilib.Net.HTML::HTMLElement -> Std::String`
+#### to_html
+
+Type: `Minilib.Net.HTML::HTMLElement -> Std::String`
 
 `el.to_html` converts the element to HTML string.
 
-## `namespace Minilib.Net.HTML::HTMLHelpers`
+### namespace Minilib.Net.HTML::HTMLHelpers
 
-### `escape_html : Std::String -> Std::String`
+#### escape_html
+
+Type: `Std::String -> Std::String`
 
 Escapes HTML special characters.
 eg. `&` -> `&amp;`, `<` -> `&lt;`, `>` -> `&gt;`, `\"` -> `&quot;`, `'` -> `&#039;`
 
-### `unescape_html : Std::String -> Std::String`
+#### unescape_html
+
+Type: `Std::String -> Std::String`
 
 Unescapes HTML special characters.
 eg. `&amp;` -> `&`, `&lt;` -> `<`, `&gt;` -> `>`, `&quot;` -> `\"`, `&#039;` -> `'`.
 NOTE: Other character references is also converted.
+
+## Types and aliases
+
+### namespace Minilib.Net.HTML
+
+#### HTMLAttribute
+
+Defined as: `type HTMLAttribute = (Std::String, Std::String)`
+
+A type that represents name and value of an attribute.
+
+#### HTMLDocument
+
+Defined as: `type HTMLDocument = unbox struct { ...fields... }`
+
+A type that represents an HTML document.
+
+##### field `html`
+
+Type: `Minilib.Net.HTML::HTMLElement`
+
+#### HTMLElement
+
+Defined as: `type HTMLElement = unbox struct { ...fields... }`
+
+A type that represents an HTML element.
+
+##### field `tag`
+
+Type: `Std::String`
+
+##### field `attrs`
+
+Type: `Std::Iterator::DynIterator Minilib.Net.HTML::HTMLAttribute`
+
+##### field `children`
+
+Type: `Std::Array Minilib.Net.HTML::HTMLNode`
+
+#### HTMLNode
+
+Defined as: `type HTMLNode = box union { ...variants... }`
+
+A type that represents an HTML node.
+
+##### variant `element`
+
+Type: `Minilib.Net.HTML::HTMLElement`
+
+##### variant `text_node`
+
+Type: `Std::String`
+
+## Traits and aliases
+
+## Trait implementations
