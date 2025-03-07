@@ -6,6 +6,7 @@ module Minilib.Net.Request;
 
 import HashMap;
 
+import Minilib.Common.IOEx;
 import Minilib.IO.FileSystem;
 import Minilib.Net.URL;
 import Minilib.Text.StringEx;
