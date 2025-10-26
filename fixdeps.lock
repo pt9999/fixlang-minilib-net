@@ -74,12 +74,12 @@ rev = "a4ae19b68fd2433d376fe135d44b1126a8f5fe91"
 
 [[dependencies]]
 name = "hashmap"
-version = "1.1.2"
-path = ".fixlang/deps/hashmap_1.1.2"
+version = "1.1.3"
+path = ".fixlang/deps/hashmap_1.1.3"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-hashmap.git"
-rev = "33da33ecb5d95d45c29feaeee5dea454fecc89b9"
+rev = "9c46ebd790c2003be35b4564a696a4c7807c7011"
 
 [[dependencies]]
 name = "hash"
