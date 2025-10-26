@@ -1,6 +1,6 @@
 # Minilib.Net.HTML
 
-Defined in minilib-net@0.5.2
+Defined in minilib-net@0.6.0
 
 Simple HTML DOM model, as well as escaping/unescaping HTML special characters.
 
@@ -134,14 +134,6 @@ Type: `Minilib.Net.HTML::HTMLElement`
 
 An empty `<tr>` element.
 
-### namespace Minilib.Net.HTML::HTMLAttribute
-
-#### _output_html
-
-Type: `Std::Array Std::String -> Std::Iterator::DynIterator Minilib.Net.HTML::HTMLAttribute -> Std::Array Std::String`
-
-`attrs._output_html` output the attributes as HTML string.
-
 ### namespace Minilib.Net.HTML::HTMLDocument
 
 #### add
@@ -163,12 +155,6 @@ Type: `Minilib.Net.HTML::HTMLDocument -> Std::String`
 Converts the HTML document to HTML string.
 
 ### namespace Minilib.Net.HTML::HTMLElement
-
-#### _output_html
-
-Type: `Std::Array Std::String -> Minilib.Net.HTML::HTMLElement -> Std::Array Std::String`
-
-`el._output_html` output the element as HTML string.
 
 #### add
 

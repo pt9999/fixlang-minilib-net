@@ -1,6 +1,6 @@
 # Minilib.Net.HttpServer
 
-Defined in minilib-net@0.5.2
+Defined in minilib-net@0.6.0
 
 Simple HTTP server.
 The interface is similar to `express` of Node.js.
@@ -41,14 +41,6 @@ Type: `Std::String -> Std::String -> Minilib.Net.HttpServer::RequestHandler -> M
 Alias of `insert_handler`.
 
 ### namespace Minilib.Net.HttpServer::Worker
-
-#### _finally
-
-Type: `(() -> Std::IO ()) -> Std::IO::IOFail a -> Std::IO::IOFail a`
-
-#### _not_found_handler
-
-Type: `Minilib.Net.Request::Request -> Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response`
 
 #### handle
 

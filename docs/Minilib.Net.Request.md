@@ -1,6 +1,6 @@
 # Minilib.Net.Request
 
-Defined in minilib-net@0.5.2
+Defined in minilib-net@0.6.0
 
 HTTP request and response.
 - Parses HTTP request headers and query strings, POST data
@@ -8,21 +8,6 @@ HTTP request and response.
 - Writes response back to client
 
 ## Values
-
-### namespace Minilib.Net.Request
-
-#### _CONTENT_TYPE_ALIASES
-
-Type: `HashMap::HashMap Std::String Std::String`
-
-Content-Type (MIME type) aliases
-
-#### _STATUS_REASON
-
-Type: `HashMap::HashMap Std::I64 Std::String`
-
-RFC9110
-HTTP status and reason-phrase
 
 ### namespace Minilib.Net.Request::Headers
 
@@ -63,18 +48,6 @@ Type: `Minilib.Net.Request::Headers -> Std::Iterator::DynIterator (Std::String, 
 
 ### namespace Minilib.Net.Request::Request
 
-#### _parse_header
-
-Type: `Std::String -> Std::Result Std::ErrMsg (Std::String, Std::String)`
-
-#### _parse_query_string
-
-Type: `Std::String -> Std::IO::IOFail (Std::Array (Std::String, Std::String))`
-
-#### _parse_request_line
-
-Type: `Std::String -> Std::Result Std::ErrMsg (Std::String, Std::String, Std::String)`
-
 #### find_query
 
 Type: `Std::String -> Minilib.Net.Request::Request -> Std::Option Std::String`
@@ -86,12 +59,6 @@ Type: `Std::IO::IOHandle -> Std::String -> Std::IO::IOFail Minilib.Net.Request::
 `Request::parse(connection, remote_addr)` reads the HTTP request from `connection` and parse it.
 
 ### namespace Minilib.Net.Request::Response
-
-#### _send_headers
-
-Type: `Minilib.Net.Request::Response -> Std::IO::IOFail Minilib.Net.Request::Response`
-
-Sends headers with a status line if they have not already been sent.
 
 #### content_type
 

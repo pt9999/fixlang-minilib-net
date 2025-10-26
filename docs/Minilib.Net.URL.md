@@ -1,54 +1,12 @@
 # Minilib.Net.URL
 
-Defined in minilib-net@0.5.2
+Defined in minilib-net@0.6.0
 
 URL and URI parsing
 
 ## Values
 
 ### namespace Minilib.Net.URL::URI
-
-#### _alpha_numeric
-
-Type: `Std::Array Std::U8`
-
-Lookup table of characters that consists of `[A-Za-z0-9]`.
-
-#### _decodeURIComponent_table
-
-Type: `Std::Array Std::U8`
-
-Lookup table of characters that `decodeURIComponent()` should not unescape.
-
-#### _decodeURI_table
-
-Type: `Std::Array Std::U8`
-
-Lookup table of characters that `decodeURI()` should not unescape.
-
-#### _decode_with
-
-Type: `Std::Array Std::U8 -> Std::String -> Std::Result Std::ErrMsg Std::String`
-
-Decodes a string with a table.
-
-#### _encodeURIComponent_table
-
-Type: `Std::Array Std::U8`
-
-Lookup table of characters that `encodeURIComponent()` should not escape.
-
-#### _encodeURI_table
-
-Type: `Std::Array Std::U8`
-
-Lookup table of characters that `encodeURI()` should not escape.
-
-#### _encode_with
-
-Type: `Std::Array Std::U8 -> Std::String -> Std::String`
-
-Encodes a string with a table.
 
 #### decodeURI
 

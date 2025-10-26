@@ -1,6 +1,6 @@
 # Minilib.Net.Tcp
 
-Defined in minilib-net@0.5.2
+Defined in minilib-net@0.6.0
 
 IPv4 TCP Socket operations.
 
@@ -41,10 +41,6 @@ for the socket may grow.
 
 ### namespace Minilib.Net.Tcp::BufferedSocket
 
-#### _BUFSIZE
-
-Type: `Std::I64`
-
 #### flush
 
 Type: `Minilib.Net.Tcp::BufferedSocket -> Std::IO::IOFail Minilib.Net.Tcp::BufferedSocket`
@@ -75,10 +71,6 @@ Writes a string to the write buffer. The contents of the write buffer is not sen
 until the size of the write buffer is equal to or greater than `_BUFSIZE`, or `flush()` is called.
 
 ### namespace Minilib.Net.Tcp::IpAddress
-
-#### _resolve_ipaddress_v4
-
-Type: `Std::String -> Std::IO::IOFail Minilib.Net.Tcp::IpAddress`
 
 #### from_U32
 
@@ -113,13 +105,6 @@ Type: `Std::U16 -> Minilib.Net.Tcp::Port`
 Type: `Minilib.Net.Tcp::Port -> Std::U16`
 
 ### namespace Minilib.Net.Tcp::Socket
-
-#### _unsafe_from_fd
-
-Type: `Std::FFI::CInt -> Std::IO::IOFail Minilib.Net.Tcp::Socket`
-
-Creates `Socket` from a file descriptor of a socket.
-The socket will be automatically closed when `Socket` is deallocated.
 
 #### accept
 
@@ -190,12 +175,6 @@ Type: `Minilib.Net.Tcp::Socket -> Std::IO::IOFail ()`
 
 ### namespace Minilib.Net.Tcp::SocketAddress
 
-#### _unsafe_from_sockaddr_in
-
-Type: `Std::Ptr -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
-
-Creates a `SocketAddress` from an allocated pointer to `struct sockaddr_in`.
-
 #### get_ipaddress
 
 Type: `Minilib.Net.Tcp::SocketAddress::SocketAddress -> Minilib.Net.Tcp::IpAddress`
@@ -210,7 +189,7 @@ Extracts a port number from the socket address.
 
 #### make
 
-Type: `Minilib.Net.Tcp::IpAddress -> Minilib.Net.Tcp::Port -> Minilib.Net.Tcp::SocketAddress::SocketAddress`
+Type: `Minilib.Net.Tcp::IpAddress -> Minilib.Net.Tcp::Port -> Std::IO Minilib.Net.Tcp::SocketAddress::SocketAddress`
 
 Creates a `SocketAddress` from an ip address and a port.
 
