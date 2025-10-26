@@ -151,12 +151,13 @@ namespace SocketAddress {
     };
 
     // Creates a `SocketAddress` from an ip address and a port.
-    make: IpAddress -> Port -> SocketAddress;
+    make: IpAddress -> Port -> IO SocketAddress;
     make = |ipaddress, port| (
         let addr: U32 = ipaddress.to_U32;
         let port: U16 = port.@port;
-        let sin: Ptr = FFI_CALL[Ptr minilib_net_sockaddr_in_create(U32, U16), addr, port];
-        _unsafe_from_sockaddr_in(sin)
+        // TODO: this should be FFI_CALL_IO ?
+        let sin: Ptr = *FFI_CALL_IO[Ptr minilib_net_sockaddr_in_create(U32, U16), addr, port];
+        pure $ _unsafe_from_sockaddr_in(sin)
     );
 
     // Creates a `SocketAddress` from an allocated pointer to `struct sockaddr_in`.
@@ -189,13 +190,14 @@ namespace SocketAddress {
         let port = if split.get_size == 2 { split.@(1) } else { "80" }; // default HTTP
         let ipaddress: IpAddress = *IpAddress::resolve(host);
         let port: Port = *from_string(port).from_result;
-        pure $ SocketAddress::make(ipaddress, port)
+        SocketAddress::make(ipaddress, port).lift
     );
 
     // Extracts an ip address from the socket address.
     get_ipaddress: SocketAddress -> IpAddress;
     get_ipaddress = |socket_address| (
         let addr: U32 = socket_address.@dtor.borrow(|sin|
+            // NOTE: this is a pure function
             FFI_CALL[U32 minilib_net_sockaddr_in_get_address(Ptr), sin]
         );
         IpAddress::from_U32(addr)
@@ -205,6 +207,7 @@ namespace SocketAddress {
     get_port: SocketAddress -> Port;
     get_port = |socket_address| (
         let port: U16 = socket_address.@dtor.borrow(|sin|
+            // NOTE: this is a pure function
             FFI_CALL[U16 minilib_net_sockaddr_in_get_port(Ptr), sin]
         );
         Port::from_U16 $ port
