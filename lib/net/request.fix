@@ -114,14 +114,14 @@ namespace Request {
     parse = |connection, remote_addr| (
         let start_line = *connection.read_line;
         let start_line = start_line.strip_last_newlines;
-        //let _ = *eprintln(start_line).lift;
+        //eprintln(start_line).lift;;
         let (method, request_target, http_version) =
             *_parse_request_line(start_line).from_result;
         let headers = *loop_m (
             Headers::empty, |headers|
             let line = *connection.read_line;
             let line = line.strip_last_newlines;
-            //let _ = *eprintln(line).lift;
+            //eprintln(line).lift;;
             if line == "" {
                 break_m $ headers
             };
@@ -136,13 +136,13 @@ namespace Request {
         // read body
         let content_length: String = headers.find("Content-Length").map_or("0", |s|s);
         let content_length: I64 = *from_string(content_length).from_result;
-        //let _ = *eprintln("reading body: content-length="+content_length.to_string).lift;
+        //eprintln("reading body: content-length="+content_length.to_string).lift;;
         let body = *read_n_bytes(connection, content_length);
 
         // parse post data
         let content_type: String = headers.find("Content-Type").map_or("", |s|s);
         let query = *if method == "POST" && content_type == "application/x-www-form-urlencoded" {
-            //let _ = *eprintln("body_str='" + body._unsafe_to_string + "'").lift;
+            //eprintln("body_str='" + body._unsafe_to_string + "'").lift;;
             _parse_query_string(body._unsafe_to_string)
         } else {
             pure $ query
@@ -262,13 +262,13 @@ namespace Response {
         let connection = res.@connection;
         let status_line = res.@http_version + " " +
             res.@status.to_string + " " + res.@reason + "\r\n";
-        let _ = *write_string(connection, status_line);
-        let _ = *res.@headers.to_iter.fold_m(
+        write_string(connection, status_line);;
+        res.@headers.to_iter.fold_m(
             (), |header, _|
             let (name, value) = header;
             write_string(connection, name + ": " + value + "\r\n")
-        );
-        let _ = *write_string(connection, "\r\n");
+        );;
+        write_string(connection, "\r\n");;
         let res = res.set_headersSent(true);
         pure $ res
     );
@@ -278,7 +278,7 @@ namespace Response {
     write_str: String -> Response -> IOFail Response;
     write_str = |str, res| (
         let res = *res._send_headers;
-        let _ = *write_string(res.@connection, str);
+        write_string(res.@connection, str);;
         pure $ res
     );
 
@@ -287,7 +287,7 @@ namespace Response {
     write_bytes: Array U8 -> Response -> IOFail Response;
     write_bytes = |bytes, res| (
         let res = *res._send_headers;
-        let _ = *IO::write_bytes(res.@connection, bytes);
+        IO::write_bytes(res.@connection, bytes);;
         pure $ res
     );
 

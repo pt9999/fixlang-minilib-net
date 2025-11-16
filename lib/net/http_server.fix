@@ -54,7 +54,7 @@ namespace Worker {
             );
             //eval debug_eprintln("handling response");
             let response = *handler(request, response);
-            let _ = *response.end;
+            response.end;;
             //eval debug_eprintln("worker finished");
             pure()
         }
@@ -65,7 +65,7 @@ namespace Worker {
     _finally: (() -> IO ()) -> IOFail a -> IOFail a;
     _finally = |f, iof| (
         let res = *iof.to_result.lift;
-        let _ = *f().lift;
+        f().lift;;
         if res.is_err { throw $ res.as_err };
         pure $ res.as_ok
     );
@@ -112,20 +112,20 @@ namespace App {
     // abnormal program termination when writing to a closed socket.
     listen: String -> App -> IOFail App;
     listen = |server_host_port, app| (
-        let _ = *pure();   // make it lazy
+        pure();;   // make it lazy
 
         // Set the signal handler for SIGPIPE to SIG_IGN.
-        let _ = *FFI_CALL_IO[Ptr signal(I32, I64), /* SIGPIPE = */ 13_I32, /* SIG_IGN = */ 1_I64].lift;
+        FFI_CALL_IO[Ptr signal(I32, I64), /* SIGPIPE = */ 13_I32, /* SIG_IGN = */ 1_I64].lift;;
 
         let socket = *listen_tcp_server(server_host_port, app.@backlog);
-        let _ = *eprintln ("Listening on " + server_host_port).lift;
+        eprintln ("Listening on " + server_host_port).lift;;
         loop_m(
             app, |app|
-            let _ = *eprintln ("Accepting connections").lift;
+            eprintln ("Accepting connections").lift;;
             let res: (I32, SocketAddress) = *socket.accept_fd;
             let (accepted_fd, addr) = res;
             let connection = *fdopen(accepted_fd, "w+");
-            let _ = *eprintln ("Accepted new connection: addr=" + addr.to_string).lift;
+            eprintln ("Accepted new connection: addr=" + addr.to_string).lift;;
 
             let task = *AsyncIOTask::make(
                 Worker::make(app).handle(connection, addr.to_string)

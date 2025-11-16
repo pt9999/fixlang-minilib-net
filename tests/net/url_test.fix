@@ -17,7 +17,7 @@ test_URL_parse_ok = |(str, (scheme, host, port, path))| (
         path: path
     };
     let actual = *URL::parse(str).from_result;
-    let _ = *(assert_equal("eq", expected, actual));
+    assert_equal("eq", expected, actual);;
     pure()
 );
 
@@ -26,8 +26,8 @@ test_URL_parse_ng = |(str, expected)| (
     let testname = "test_URL_parse_ng (" + str + ")";
     make_test(testname) $ |_|
     let res = URL::parse(str);
-    let _ = *(assert_true("err", res.is_err));
-    let _ = *(assert_equal("eq", expected, res.as_err));
+    assert_true("err", res.is_err);;
+    assert_equal("eq", expected, res.as_err);;
     pure()
 );
 
@@ -50,7 +50,7 @@ test_encodeURI_ok = |(str, expected)| (
     let testname = "test_encodeURI_ok (" + str + "," + expected + ")";
     make_test(testname) $ |_|
     let actual = encodeURI(str);
-    let _ = *(assert_equal("eq", expected, actual));
+    assert_equal("eq", expected, actual);;
     pure()
 );
 
@@ -72,7 +72,7 @@ test_encodeURIComponent_ok = |(str, expected)| (
     let testname = "test_encodeURIComponent_ok (" + str + "," + expected + ")";
     make_test(testname) $ |_|
     let actual = encodeURIComponent(str);
-    let _ = *(assert_equal("eq", expected, actual));
+    assert_equal("eq", expected, actual);;
     pure()
 );
 
@@ -94,8 +94,8 @@ test_decodeURI_ok = |(str, expected)| (
     let testname = "test_decodeURI_ok (" + str + ")";
     make_test(testname) $ |_|
     let res = decodeURI(str);
-    let _ = *(assert_true("ok", res.is_ok));
-    let _ = *(assert_equal("eq", expected, res.as_ok));
+    assert_true("ok", res.is_ok);;
+    assert_equal("eq", expected, res.as_ok);;
     pure()
 );
 
@@ -104,8 +104,8 @@ test_decodeURI_ng = |(str, expected)| (
     let testname = "test_decodeURI_ng (" + str + ")";
     make_test(testname) $ |_|
     let res = decodeURI(str);
-    let _ = *(assert_true("err", res.is_err));
-    let _ = *(assert_equal("eq", expected, res.as_err));
+    assert_true("err", res.is_err);;
+    assert_equal("eq", expected, res.as_err);;
     pure()
 );
 
@@ -133,8 +133,8 @@ test_decodeURIComponent_ok = |(str, expected)| (
     let testname = "test_decodeURIComponent_ok (" + str + ")";
     make_test(testname) $ |_|
     let res = decodeURIComponent(str);
-    let _ = *(assert_true("ok", res.is_ok));
-    let _ = *(assert_equal("eq", expected, res.as_ok));
+    assert_true("ok", res.is_ok);;
+    assert_equal("eq", expected, res.as_ok);;
     pure()
 );
 
@@ -143,8 +143,8 @@ test_decodeURIComponent_ng = |(str, expected)| (
     let testname = "test_decodeURIComponent_ng (" + str + ")";
     make_test(testname) $ |_|
     let res = decodeURIComponent(str);
-    let _ = *(assert_true("err", res.is_err));
-    let _ = *(assert_equal("eq", expected, res.as_err));
+    assert_true("err", res.is_err);;
+    assert_equal("eq", expected, res.as_err);;
     pure()
 );
 

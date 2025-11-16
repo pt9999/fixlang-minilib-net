@@ -108,7 +108,7 @@ namespace RouterNode {
             if node.@entry.is_empty {
                 pure()
             };   
-            let _ = *print(prefix + ": ");
+            print(prefix + ": ");;
             print(node.@entry.to_string)
         );
         let print_directory = (
@@ -121,8 +121,8 @@ namespace RouterNode {
                 child_node.show(prefix + slash + child_name)
             )
         );
-        let _ = *print_entry;
-        let _ = *print_directory;
+        print_entry;;
+        print_directory;;
         pure()
     );
 }
@@ -161,21 +161,21 @@ namespace Router {
 /*
 //main: IO ();
 //main = (
-    let _ = *eprintln("start");
+    eprintln("start");;
     let router: Router String = Router::empty;
     let router = router.insert("GET", "/", "index");
     let router = router.insert("GET", "/users", "users");
     let router = router.insert("POST", "/users", "users-post");
     let router = router.insert("GET", "/users/1", "users-1");
-    let _ = *router.@root.show("/");
+    router.@root.show("/");;
     let find_handler = |method, path, router| (
         let opt_handler: Option String = router.find(method, path);
         println("find: " + method + " " + path + " = " + opt_handler.to_string)
     );
-    let _ = *find_handler("GET", "/users/", router);
-    let _ = *find_handler("POST", "/users/", router);
-    let _ = *find_handler("GET", "/users/1/", router);
-    let _ = *find_handler("GET", "/notfound/", router);
+    find_handler("GET", "/users/", router);;
+    find_handler("POST", "/users/", router);;
+    find_handler("GET", "/users/1/", router);;
+    find_handler("GET", "/notfound/", router);;
     pure()
 );
 */
