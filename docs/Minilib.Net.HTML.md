@@ -1,6 +1,6 @@
 # Minilib.Net.HTML
 
-Defined in minilib-net@0.6.0
+Defined in minilib-net@0.6.1
 
 Simple HTML DOM model, as well as escaping/unescaping HTML special characters.
 
@@ -260,3 +260,7 @@ Type: `Std::String`
 ## Traits and aliases
 
 ## Trait implementations
+
+### impl `Minilib.Net.HTML::HTMLDocument : Std::ToString`
+
+### impl `Minilib.Net.HTML::HTMLElement : Std::ToString`
