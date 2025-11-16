@@ -100,6 +100,10 @@ type HTMLDocument = unbox struct {
     html: HTMLElement           // root element, ie. `<html>`
 };
 
+impl HTMLDocument: ToString {
+    to_string = to_html;
+}
+
 namespace HTMLDocument {
     // An empty HTML document.
     empty: HTMLDocument;
@@ -135,6 +139,10 @@ type HTMLElement = unbox struct {
     attrs: DynIterator HTMLAttribute,  // attributes (reversed iterator)
     children: Array HTMLNode        // child nodes
 };
+
+impl HTMLElement: ToString {
+    to_string = to_html;
+}
 
 namespace HTMLElement {
 
