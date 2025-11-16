@@ -15,35 +15,30 @@ create_simple_router = |_| (
     router
 );
 
-test_router_find_ok: (String, String, Option String) -> TestCase;
-test_router_find_ok = |(method, path, expected)| (
-    let testname = "test_router_find_ok(" + method + " " + path + ")";
-    make_test(testname) $ |_|
-    let router = create_simple_router();
-    let actual = router.find(method, path);
-    assert_equal("eq", expected, actual)
-);
-
 test_router_find: TestCase;
 test_router_find = (
-    [
-        test_router_find_ok $ ("", "", none()),
-        test_router_find_ok $ ("XXX", "", none()),
-        test_router_find_ok $ ("GET", "", some("index")),
-        test_router_find_ok $ ("GET", "/", some("index")),
-        test_router_find_ok $ ("GET", "//", some("index")),
-        test_router_find_ok $ ("POST", "", none()),
-        test_router_find_ok $ ("GET", "xxx", none()),
-        test_router_find_ok $ ("GET", "users", some("users")),
-        test_router_find_ok $ ("GET", "/users", some("users")),
-        test_router_find_ok $ ("GET", "//users//", some("users")),
-        test_router_find_ok $ ("GET", "/users/1", some("users-1")),
-        test_router_find_ok $ ("GET", "//users//1//", some("users-1")),
-        test_router_find_ok $ ("POST", "/users", some("users-post")),
-        test_router_find_ok $ ("POST", "/users/1", none()),
-        TestCase::empty
-    ]
-    .run_tests
+    make_table_test("test_router_find",
+        [
+            ("", "", none()),
+            ("XXX", "", none()),
+            ("GET", "", some("index")),
+            ("GET", "/", some("index")),
+            ("GET", "//", some("index")),
+            ("POST", "", none()),
+            ("GET", "xxx", none()),
+            ("GET", "users", some("users")),
+            ("GET", "/users", some("users")),
+            ("GET", "//users//", some("users")),
+            ("GET", "/users/1", some("users-1")),
+            ("GET", "//users//1//", some("users-1")),
+            ("POST", "/users", some("users-post")),
+            ("POST", "/users/1", none()),
+        ],
+        |(method, path, expected)|
+        let router = create_simple_router();
+        let actual = router.find(method, path);
+        assert_equal("eq", expected, actual)
+    )
 );
 
 main: IO ();
