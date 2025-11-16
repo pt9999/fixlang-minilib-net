@@ -10,6 +10,7 @@ import Minilib.Common.IOEx;
 import Minilib.IO.FileSystem;
 import Minilib.Net.URL;
 import Minilib.Text.StringEx;
+import Minilib.Trait.Traversable;
 
 //------------------------------------------------------------------------------------
 
@@ -263,8 +264,7 @@ namespace Response {
         let status_line = res.@http_version + " " +
             res.@status.to_string + " " + res.@reason + "\r\n";
         write_string(connection, status_line);;
-        res.@headers.to_iter.fold_m(
-            (), |header, _|
+        res.@headers.to_iter.foreach_m(|header|
             let (name, value) = header;
             write_string(connection, name + ": " + value + "\r\n")
         );;

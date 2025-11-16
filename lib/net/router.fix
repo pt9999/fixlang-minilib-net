@@ -6,7 +6,7 @@ module Minilib.Net.Router;
 import HashMap;
 
 import Minilib.Text.StringEx;
-
+import Minilib.Trait.Traversable;
 
 // `RouterEntry h` represents a map from method name to a request handler.
 // `h` is a type of request handler.
@@ -116,8 +116,8 @@ namespace RouterNode {
                 s.get_sub(s.get_size - e.get_size, s.get_size) == e
             );
             let slash = if prefix.ends_with("/") { "" } else { "/" };
-            node.@directory.to_iter.fold_m(
-                (), |(child_name, child_node), _|
+            node.@directory.to_iter.foreach_m(
+                |(child_name, child_node)|
                 child_node.show(prefix + slash + child_name)
             )
         );
