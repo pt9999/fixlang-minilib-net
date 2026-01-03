@@ -1,6 +1,6 @@
 # Minilib.Net.HttpServer
 
-Defined in minilib-net@0.6.5
+Defined in minilib-net@0.6.6
 
 Simple HTTP server.
 The interface is similar to `express` of Node.js.
