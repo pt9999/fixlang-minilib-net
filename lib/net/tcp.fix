@@ -155,16 +155,15 @@ namespace SocketAddress {
     make = |ipaddress, port| (
         let addr: U32 = ipaddress.to_U32;
         let port: U16 = port.@port;
-        // TODO: this should be FFI_CALL_IO ?
         let sin: Ptr = *FFI_CALL_IO[Ptr minilib_net_sockaddr_in_create(U32, U16), addr, port];
-        pure $ _unsafe_from_sockaddr_in(sin)
+        _unsafe_from_sockaddr_in(sin)
     );
 
     // Creates a `SocketAddress` from an allocated pointer to `struct sockaddr_in`.
-    _unsafe_from_sockaddr_in: Ptr -> SocketAddress;
+    _unsafe_from_sockaddr_in: Ptr -> IO SocketAddress;
     _unsafe_from_sockaddr_in = |sin| (
-        SocketAddress { 
-            dtor: Destructor::make(
+        pure $ SocketAddress { 
+            dtor: *Destructor::make(
                 sin, |sin|
                 FFI_CALL_IO[() minilib_net_sockaddr_in_destroy(Ptr), sin];;
                 pure $ nullptr
@@ -242,14 +241,14 @@ namespace Socket {
     _unsafe_from_fd = |fd| (
         //eval debug_eprintln("Socket::_unsafe_from_fd: fd=" + fd.to_string);
         pure $ Socket {
-            data: Destructor::make(fd, |fd|
+            data: *Destructor::make(fd, |fd|
                 //eval debug_eprintln ("closing socket fd: " + fd.to_string);
                 let res = *FFI_CALL_IO[CInt close(CInt), fd];
                 when(res.to_I64 != 0,
                     eprintln("closing socket failed: res=" + res.to_string)
                 );;
                 pure $ -1.to_CInt
-            )
+            ).lift
         }
     );
 
@@ -339,7 +338,7 @@ namespace Socket {
         if p_addr.@(0) == nullptr {
             throw $ "accept failed: addr==null"
         };
-        let remote_address : SocketAddress = SocketAddress::_unsafe_from_sockaddr_in(p_addr.@(0));
+        let remote_address : SocketAddress = *SocketAddress::_unsafe_from_sockaddr_in(p_addr.@(0)).lift;
         //eprintln ("accepted fd="+fd.to_string+" remote_address="+remote_address.to_string).lift;;
         pure $ (fd, remote_address)
     );
