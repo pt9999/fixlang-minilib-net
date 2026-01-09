@@ -1,6 +1,6 @@
 # Minilib.Net.Request
 
-Defined in minilib-net@0.6.6
+Defined in minilib-net@0.6.7
 
 HTTP request and response.
 - Parses HTTP request headers and query strings, POST data
