@@ -1,7 +1,7 @@
 [general]
 name = "minilib-net"
-version = "0.6.8"
-fix_version = "1.2.0"
+version = "0.7.0-alpha1"
+fix_version = "1.3.0"
 authors = ["pt9999"]
 license = "MIT"
 
@@ -30,24 +30,29 @@ files = [
 ]
 
 [[dependencies]]
-name = "minilib-common"
-version = "0.11.3"
-# path = "../fixlang-minilib-common"
-git = { url = "https://github.com/pt9999/fixlang-minilib-common.git" }
-
-[[dependencies]]
-name = "minilib-io"
-version = "0.7.1"
-# path = "../fixlang-minilib-io"
-git = { url = "https://github.com/pt9999/fixlang-minilib-io.git" }
-
-[[dependencies]]
-name = "minilib-xml"
-version = "0.5.6"
-# path = "../fixlang-minilib-xml"
-git = { url = "https://github.com/pt9999/fixlang-minilib-xml.git" }
+name = "hashmap"
+version = "1.1.4"
+git = { url = "https://github.com/tttmmmyyyy/fixlang-hashmap.git" }
 
 [[dependencies]]
 name = "asynctask"
 version = "1.1.4"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }
+
+[[dependencies]]
+name = "minilib-common"
+version = "0.12.0"
+# path = "../fixlang-minilib-common"
+git = { url = "https://github.com/pt9999/fixlang-minilib-common.git" }
+
+[[dependencies]]
+name = "minilib-io"
+version = "0.8.0"
+# path = "../fixlang-minilib-io"
+git = { url = "https://github.com/pt9999/fixlang-minilib-io.git" }
+
+[[dependencies]]
+name = "minilib-xml"
+version = "0.6.0"
+# path = "../fixlang-minilib-xml"
+git = { url = "https://github.com/pt9999/fixlang-minilib-xml.git" }
