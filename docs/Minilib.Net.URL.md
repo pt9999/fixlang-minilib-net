@@ -1,6 +1,6 @@
 # Minilib.Net.URL
 
-Defined in minilib-net@0.6.8
+Defined in minilib-net@0.7.0
 
 URL and URI parsing
 
