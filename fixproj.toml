@@ -31,23 +31,23 @@ files = [
 
 [[dependencies]]
 name = "minilib-common"
-version = "*"
+version = "0.11.3"
 # path = "../fixlang-minilib-common"
 git = { url = "https://github.com/pt9999/fixlang-minilib-common.git" }
 
 [[dependencies]]
 name = "minilib-io"
-version = "*"
+version = "0.7.1"
 # path = "../fixlang-minilib-io"
 git = { url = "https://github.com/pt9999/fixlang-minilib-io.git" }
 
 [[dependencies]]
 name = "minilib-xml"
-version = "*"
+version = "0.5.6"
 # path = "../fixlang-minilib-xml"
 git = { url = "https://github.com/pt9999/fixlang-minilib-xml.git" }
 
 [[dependencies]]
 name = "asynctask"
-version = "*"
+version = "1.1.4"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }
