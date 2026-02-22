@@ -140,7 +140,7 @@ namespace URI {
             .push_back(encode_hex_char(hi).to_upper)
             .push_back(encode_hex_char(lo).to_upper)
         )
-        ._unsafe_to_string
+        .StringEx::from_array
     );
 
     // Decodes a string with a table.
@@ -171,7 +171,7 @@ namespace URI {
             };
             continue_m $ (output.push_back(c), i + 3)
         );
-        ok $ output._unsafe_to_string
+        ok $ output.StringEx::from_array
     );
 
     // Same as JavaScript `encodeURI()`.

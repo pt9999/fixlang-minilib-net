@@ -143,8 +143,8 @@ namespace Request {
         // parse post data
         let content_type: String = headers.find("Content-Type").map_or("", |s|s);
         let query = *if method == "POST" && content_type == "application/x-www-form-urlencoded" {
-            //eprintln("body_str='" + body._unsafe_to_string + "'").lift;;
-            _parse_query_string(body._unsafe_to_string)
+            //eprintln("body_str='" + body.StringEx::from_array + "'").lift;;
+            _parse_query_string(body.StringEx::from_array)
         } else {
             pure $ query
         };

@@ -49,7 +49,7 @@ test_encodeURI = (
             ("-_.!~*'()", "-_.!~*'()"),
             (";,/?:@&=+$", ";,/?:@&=+$"),
             ("/:@[`{", "/:@%5B%60%7B"), // edge case of 0-9, A-Z, a-z
-            ([1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string, "%01%1F%20%7F%80%FF"),
+            ([1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8].StringEx::from_array, "%01%1F%20%7F%80%FF"),
         ],
         |(str, expected)|
         let actual = encodeURI(str);
@@ -66,7 +66,7 @@ test_encodeURIComponent = (
             ("-_.!~*'()", "-_.!~*'()"),
             (";,/?:@&=+$", "%3B%2C%2F%3F%3A%40%26%3D%2B%24"),
             ("/:@[`{", "%2F%3A%40%5B%60%7B"), // edge case of 0-9, A-Z, a-z
-            ([1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string, "%01%1F%20%7F%80%FF"),
+            ([1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8].StringEx::from_array, "%01%1F%20%7F%80%FF"),
         ],
         |(str, expected)|
         let actual = encodeURIComponent(str);
@@ -85,7 +85,7 @@ test_decodeURI = (
             (";/?:@&=+$,#", ok $ ";/?:@&=+$,#"),
             ("%3B%2F%3F%3A%40%26%3D%2B%24%2C%23", ok $ "%3B%2F%3F%3A%40%26%3D%2B%24%2C%23"),       // preserves escaped: ";/?:@&=+$,#"
             ("/:@%5B%60%7B", ok $ "/:@[`{"), // edge case of 0-9, A-Z, a-z
-            ("%01%1F%20%7F%80%FF", ok $ [1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string),
+            ("%01%1F%20%7F%80%FF", ok $ [1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8].StringEx::from_array),
             ("%", err $ "Percent sign requires two characters"),
             ("%0", err $ "Percent sign requires two characters"),
             ("%0X", err $ "Not a hexadecimal character: 'X'"),
@@ -107,7 +107,7 @@ test_decodeURIComponent = (
             (";/?:@&=+$,#", ok $ ";/?:@&=+$,#"),
             ("%3B%2F%3F%3A%40%26%3D%2B%24%2C%23", ok $ ";/?:@&=+$,#"),       // does not preserve escaped: ";/?:@&=+$,#"
             ("%2F%3A%40%5B%60%7B", ok $ "/:@[`{"), // edge case of 0-9, A-Z, a-z
-            ("%01%1F%20%7F%80%FF", ok $ [1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8]._unsafe_to_string),
+            ("%01%1F%20%7F%80%FF", ok $ [1_U8, 31_U8, 32_U8, 127_U8, 128_U8, 255_U8].StringEx::from_array),
             ("%", err $ "Percent sign requires two characters"),
             ("%0", err $ "Percent sign requires two characters"),
             ("%0X", err $ "Not a hexadecimal character: 'X'"),
