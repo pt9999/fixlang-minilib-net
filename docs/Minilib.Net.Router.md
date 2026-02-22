@@ -1,6 +1,6 @@
 # Minilib.Net.Router
 
-Defined in minilib-net@0.7.0
+Defined in minilib-net@0.7.1
 
 HTTP request router.
 - Mounts a request handler to specific path and method
