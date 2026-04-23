@@ -1,3 +1,7 @@
+## 0.7.2
+### Changed
+- Removed indirect dependencies.
+
 ## 0.7.1
 ### Changed
 - Utilized minilib-common@0.12.3.

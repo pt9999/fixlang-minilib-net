@@ -1,4 +1,4 @@
-proj_file_hash = "684062cd185088117cb9c9e4e3d76cdd"
+proj_file_hash = "e53dc8c7ec9935b3289a694e098c0c6f"
 
 [[dependencies]]
 name = "asynctask"
@@ -29,57 +29,57 @@ rev = "145a20913eb9c280edd616d5b9977d33303343c1"
 
 [[dependencies]]
 name = "hashmap"
-version = "1.1.4"
-path = ".fixlang/deps/hashmap_1.1.4"
+version = "1.2.0"
+path = ".fixlang/deps/hashmap_1.2.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-hashmap.git"
-rev = "dd5d159216905fccdf4a01944c088f9064f5640b"
+rev = "a7cb58fef24d0cf11ba305faf4f764dca72ecc45"
 
 [[dependencies]]
 name = "minilib-binary"
-version = "0.6.1"
-path = ".fixlang/deps/minilib-binary_0.6.1"
+version = "0.6.2"
+path = ".fixlang/deps/minilib-binary_0.6.2"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "34535107f07cd15ebc99e9b8377433988d692ea9"
+rev = "e6e831a77b80506e01338844b4cb0d6c86267226"
 
 [[dependencies]]
 name = "minilib-common"
-version = "0.12.3"
-path = ".fixlang/deps/minilib-common_0.12.3"
+version = "0.13.0"
+path = ".fixlang/deps/minilib-common_0.13.0"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "e3751a7443234275c64bf6aafb2645c26f9363a1"
+rev = "d8af3860a44a3ab19ddf6a39c809b959821cbe98"
 
 [[dependencies]]
 name = "minilib-io"
-version = "0.8.2"
-path = ".fixlang/deps/minilib-io_0.8.2"
+version = "0.8.3"
+path = ".fixlang/deps/minilib-io_0.8.3"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-io.git"
-rev = "7cf8f1289dda17059cd488a6eac44f5a749643f5"
+rev = "8412e10b3892dfcc4ec1b4427d982197f2cbb9e3"
 
 [[dependencies]]
 name = "minilib-text"
-version = "0.9.0"
-path = ".fixlang/deps/minilib-text_0.9.0"
+version = "0.9.2"
+path = ".fixlang/deps/minilib-text_0.9.2"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-text.git"
-rev = "41ea19e7a4eb27385a44bf989c114d286474f5f6"
+rev = "7ef1a3e96e95edc5a99afd5be3c86d820a52b63b"
 
 [[dependencies]]
 name = "minilib-xml"
-version = "0.6.1"
-path = ".fixlang/deps/minilib-xml_0.6.1"
+version = "0.6.2"
+path = ".fixlang/deps/minilib-xml_0.6.2"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-xml.git"
-rev = "48f876ba490f2055f7c96c5ff6bca7f82df92643"
+rev = "9060b1a54eca754fb6b4e8db96e13cf8d872d55e"
 
 [[dependencies]]
 name = "time"
