@@ -1,6 +1,6 @@
 # Minilib.Net.Tcp
 
-Defined in minilib-net@0.7.2
+Defined in minilib-net@0.7.3
 
 IPv4 TCP Socket operations.
 
