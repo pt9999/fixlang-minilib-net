@@ -1,3 +1,7 @@
+## 0.7.3
+### Changed
+- Upgraded to minilib-io@0.8.4, minilib-xml@0.6.3, hashmap@2.0.0.
+
 ## 0.7.2
 ### Changed
 - Removed indirect dependencies.
