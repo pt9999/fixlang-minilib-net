@@ -1,6 +1,6 @@
 # Minilib.Net.Tcp
 
-Defined in minilib-net@0.7.3
+Defined in minilib-net@0.7.4
 
 IPv4 TCP Socket operations.
 
@@ -90,7 +90,7 @@ Type: `Std::String -> Std::IO::IOFail Minilib.Net.Tcp::IpAddress`
 
 Resolve a hostname such as "127.0.0.1" or "www.example.com".
 
-#### to_U32
+#### u32
 
 Type: `Minilib.Net.Tcp::IpAddress -> Std::U32`
 
@@ -100,7 +100,7 @@ Type: `Minilib.Net.Tcp::IpAddress -> Std::U32`
 
 Type: `Std::U16 -> Minilib.Net.Tcp::Port`
 
-#### to_U16
+#### u16
 
 Type: `Minilib.Net.Tcp::Port -> Std::U16`
 
