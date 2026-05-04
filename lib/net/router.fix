@@ -23,7 +23,7 @@ namespace RouterEntry {
 
     // Returns true iff it is an empty entry.
     is_empty: RouterEntry h -> Bool;
-    is_empty = |entry| entry.@map.get_size == 0;
+    is_empty = |entry| entry.@map.@size == 0;
 
     // `router_entry.update(method, handler)` sets the handler of the method `method` to `handler`.
     update: String -> h -> RouterEntry h -> RouterEntry h;
@@ -113,7 +113,7 @@ namespace RouterNode {
         );
         let print_directory = (
             let ends_with: String -> String -> Bool = |e,s| (
-                s.get_sub(s.get_size - e.get_size, s.get_size) == e
+                s.get_sub(s.@size - e.@size, s.@size) == e
             );
             let slash = if prefix.ends_with("/") { "" } else { "/" };
             node.@directory.to_iter.foreach_m(

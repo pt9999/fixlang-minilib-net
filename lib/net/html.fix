@@ -191,7 +191,7 @@ namespace HTMLElement {
         let output = output.push_back("<" + el.@tag);
         let output = el.@attrs.reverse.to_dyn._output_html(output);
         let output = output.push_back(">");
-        let child_sep = if el.@children.get_size >= 2 { "\n" } else { "" };
+        let child_sep = if el.@children.@size >= 2 { "\n" } else { "" };
         let output = output.push_back(child_sep);
         let output = el.@children.to_iter.fold(
             output, |node, output|

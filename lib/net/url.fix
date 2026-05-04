@@ -85,7 +85,7 @@ namespace URI {
         ];
         char_ranges.to_iter.fold(
             Array::fill(256, 0_U8), |(min, max), array|
-            Iterator::range(min.to_I64, max.to_I64 + 1).fold(
+            Iterator::range(min.i64, max.i64 + 1).fold(
                 array, |c, array| array.set(c, 1_U8)
             )
         )
@@ -96,7 +96,7 @@ namespace URI {
     _encodeURIComponent_table = (
         "-_.!~*'()".get_bytes.pop_back.to_iter.fold(
             _alpha_numeric, |c, array|
-            array.set(c.to_I64, 1_U8)
+            array.set(c.i64, 1_U8)
         )
     );
 
@@ -105,7 +105,7 @@ namespace URI {
     _encodeURI_table = (
         ";,/?:@&=+$".get_bytes.pop_back.to_iter.fold(
             _encodeURIComponent_table, |c, array|
-            array.set(c.to_I64, 1_U8)
+            array.set(c.i64, 1_U8)
         )
     );
 
@@ -121,7 +121,7 @@ namespace URI {
         // preserve_escape_table
         ";/?:@&=+$,#".get_bytes.pop_back.to_iter.fold(
             _decodeURIComponent_table, |c, array|
-            array.set(c.to_I64, 1_U8)
+            array.set(c.i64, 1_U8)
         )    
     );
 
@@ -130,8 +130,8 @@ namespace URI {
     _encode_with = |unescaped_table, str| (
         let input = str.get_bytes.pop_back;
         input.to_iter.fold(
-            Array::empty(input.get_size * 3), |c, output|
-            if unescaped_table.@(c.to_I64) != 0_U8 {
+            Array::empty(input.@size * 3), |c, output|
+            if unescaped_table.@(c.i64) != 0_U8 {
                 output.push_back(c)
             };
             let hi = c.shift_right(4_U8).bit_and(15_U8);
@@ -147,7 +147,7 @@ namespace URI {
     _decode_with: Array U8 -> String -> Result ErrMsg String;
     _decode_with = |preserve_escape_table, str| (
         let input = str.get_bytes.pop_back;
-        let input_size = input.get_size;
+        let input_size = input.@size;
         let output = *loop_m(
             (Array::empty(input_size), 0), |(output, i)|
             if i >= input_size {
@@ -163,7 +163,7 @@ namespace URI {
             let hi = *decode_hex_char(input.@(i + 1));
             let lo = *decode_hex_char(input.@(i + 2));
             let c = hi.shift_left(4_U8).bit_or(lo);
-            if preserve_escape_table.@(c.to_I64) != 0_U8 {
+            if preserve_escape_table.@(c.i64) != 0_U8 {
                 let output = output.push_back(input.@(i))
                     .push_back(input.@(i + 1))
                     .push_back(input.@(i + 2));

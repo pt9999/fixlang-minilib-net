@@ -166,7 +166,7 @@ namespace Request {
     _parse_request_line: String -> Result ErrMsg (String, String, String);
     _parse_request_line = |line| (
         let fields = line.split(" ").to_array;
-        if fields.get_size != 3 {
+        if fields.@size != 3 {
             // TODO: Chrome often sends an empty line that causes "ERROR: Invalid request line: ``"
             err $ "Invalid request line: `" + line + "`"
         };
