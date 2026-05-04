@@ -1,3 +1,7 @@
+## 0.7.4
+### Changed
+- Upgraded to minilib-io@0.8.5, minilib-xml@0.6.4, hashmap@2.0.1.
+
 ## 0.7.3
 ### Changed
 - Upgraded to minilib-io@0.8.4, minilib-xml@0.6.3, hashmap@2.0.0.
