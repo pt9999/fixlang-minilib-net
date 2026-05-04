@@ -162,7 +162,7 @@ namespace SocketAddress {
     // Creates a `SocketAddress` from an allocated pointer to `struct sockaddr_in`.
     _unsafe_from_sockaddr_in: Ptr -> IO SocketAddress;
     _unsafe_from_sockaddr_in = |sin| (
-        pure $ SocketAddress { 
+        pure $ SocketAddress {
             dtor: *Destructor::make(
                 sin, |sin|
                 FFI_CALL_IO[() minilib_net_sockaddr_in_destroy(Ptr), sin];;

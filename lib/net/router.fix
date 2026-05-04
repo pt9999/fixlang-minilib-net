@@ -17,7 +17,7 @@ type RouterEntry h = box struct {
 namespace RouterEntry {
     // An empty entry.
     empty: RouterEntry h;
-    empty = RouterEntry { 
+    empty = RouterEntry {
         map: HashMap::empty(2)
     };
 
@@ -42,7 +42,7 @@ namespace RouterEntry {
 impl [h: ToString] RouterEntry h: ToString {
     to_string = |entry| (
         "RouterEntry { "
-        +   entry.@map.to_iter.map(|(k,v)| 
+        +   entry.@map.to_iter.map(|(k,v)|
                 k.to_string + ":" + v.to_string
             ).join(",")
         + " }"
@@ -67,11 +67,11 @@ namespace RouterNode {
     create: DynIterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h;
     create =  |path, entry_updater| (
         update(path, entry_updater, RouterNode::empty)
-    ); 
-    
+    );
+
     // `current_node.update(path, entry_updater)` updates the entry of a target node that is reached via `path` from `current_node`.
     // `path` is a path from `current_node` to the target node. If `path` is an empty iterator, `current_node` becomes the target node.
-    // `entry_updater` is a function that updates the `RouterEntry` of the target node.  
+    // `entry_updater` is a function that updates the `RouterEntry` of the target node.
     update: DynIterator String -> (RouterEntry h -> RouterEntry h) -> RouterNode h -> RouterNode h;
     update = |path, entry_updater, node| (
         if path.is_empty {
@@ -107,7 +107,7 @@ namespace RouterNode {
         let print_entry = (
             if node.@entry.is_empty {
                 pure()
-            };   
+            };
             print(prefix + ": ");;
             print(node.@entry.to_string)
         );

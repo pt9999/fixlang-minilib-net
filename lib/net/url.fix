@@ -56,12 +56,12 @@ namespace URL {
         };
         let (host_port, path) = rest.split_first("/");
         let path = if path == "" { "/" } else { "/" + path };
-        
+
         let (host, port) = host_port.split_first(":");
-        let port = if port == "" { 
+        let port = if port == "" {
             if scheme == "https" { "443" } else { "80" }
         } else { port };
-        
+
         if host == "" {
             err $ "Invalid host"
         };
@@ -122,7 +122,7 @@ namespace URI {
         ";/?:@&=+$,#".get_bytes.pop_back.to_iter.fold(
             _decodeURIComponent_table, |c, array|
             array.set(c.i64, 1_U8)
-        )    
+        )
     );
 
     // Encodes a string with a table.

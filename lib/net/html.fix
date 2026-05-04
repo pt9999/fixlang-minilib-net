@@ -111,7 +111,7 @@ namespace HTMLDocument {
         HTMLDocument {
             html: HTMLElement::make("html")
         }
-    );    
+    );
 
     // Adds a child element to `<html>` element.
     add: HTMLElement -> HTMLDocument -> HTMLDocument;
@@ -124,7 +124,7 @@ namespace HTMLDocument {
     to_html = |doc| (
         "<!DOCTYPE html>\n" +
         doc.@html.to_html
-    );   
+    );
 }
 
 // A type that represents an HTML node.
@@ -178,7 +178,7 @@ namespace HTMLElement {
     text = |txt, el| (
         el.mod_children(push_back(text_node(txt)))
     );
-        
+
     // `el.to_html` converts the element to HTML string.
     to_html: HTMLElement -> String;
     to_html = |el| (

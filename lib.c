@@ -93,7 +93,7 @@ static void _debug_sockaddr_in(const char* label, struct sockaddr* sa)
 
 static sa_family_t _get_sa_family(int sockfd)
 {
-    struct sockaddr addr; 
+    struct sockaddr addr;
     socklen_t addrlen = (socklen_t) sizeof(addr);
     int err = getsockname(sockfd, &addr, &addrlen);
     if (err == -1) {
@@ -106,7 +106,7 @@ static socklen_t _calc_addrlen(sa_family_t family)
 {
     switch(family)
     {
-        case AF_INET: 
+        case AF_INET:
             return sizeof(struct sockaddr_in);
         default:
             assert("Currently not supported" == NULL);
