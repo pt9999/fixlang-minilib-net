@@ -99,8 +99,8 @@ namespace IpAddress {
         let addr = Array::fill(4, 0_U8);
         let addr_size = [ addr.@size.c_size_t ];
         FFI::clear_errno.lift;;
-        let (addr_size, (addr, err)) = *addr_size.mutate_boxed_io(|p_addr_size|
-            addr.mutate_boxed_io(|p_addr|
+        let (addr_size, (addr, err)) = *addr_size.mutate_elements_io(|p_addr_size|
+            addr.mutate_elements_io(|p_addr|
                 hostname.borrow_c_str_io(|p_hostname|
                     FFI_CALL_IO[CInt minilib_net_resolve_ipaddress_v4(Ptr, Ptr, Ptr), p_hostname, p_addr, p_addr_size]
                 )
@@ -328,7 +328,7 @@ namespace Socket {
         pure();;    // make it lazy
         let p_addr: Array Ptr = [ nullptr ];
         let (p_addr, fd) = *socket.borrow_fd_io(|sockfd|
-            p_addr.mutate_boxed_io(|pp_addr|
+            p_addr.mutate_elements_io(|pp_addr|
                 FFI_CALL_IO[CInt minilib_net_socket_accept(CInt, Ptr), sockfd, pp_addr]
             )
         ).lift;
@@ -368,7 +368,7 @@ namespace Socket {
         let size_to_send = bytes.@size.u64;
         let flags = 0.c_int;
         let size = *socket.borrow_fd_io(|fd|
-            bytes.borrow_boxed_io(|p_bytes|
+            bytes.borrow_elements_io(|p_bytes|
                 //eval debug_eprintln("send: fd=" + fd.to_string);
                 FFI_CALL_IO[CSizeT send(CInt, Ptr, CSizeT, CInt), fd, p_bytes, size_to_send, flags]
             )
@@ -391,7 +391,7 @@ namespace Socket {
         let bytes = Array::fill(size_to_recv, 0_U8);
         let flags = 0.c_int;
         let size = *socket.borrow_fd_io(|fd|
-            bytes.borrow_boxed_io(|p_bytes|
+            bytes.borrow_elements_io(|p_bytes|
                 //eval debug_eprintln("recv: fd=" + fd.to_string);
                 FFI_CALL_IO[CSizeT recv(CInt, Ptr, CSizeT, CInt), fd, p_bytes, size_to_recv.u64, flags]
             )
