@@ -1,3 +1,10 @@
+## 0.8.0
+### Changed
+- Merged PR#2 (thanks to tttmmmyyyy san).
+  - Migrate to the unboxed-Array standard library.
+  - fixproj.toml: Bumped `fix_version` to 1.5.0.
+- Upgraded to minilib-io@0.9.0, minilib-xml@0.7.0, asynctask@2.0.0.
+
 ## 0.7.4
 ### Changed
 - Upgraded to minilib-io@0.8.5, minilib-xml@0.6.4, hashmap@2.0.1.
