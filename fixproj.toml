@@ -1,6 +1,6 @@
 [general]
 name = "minilib-net"
-version = "0.7.4"
+version = "0.8.0-alpha.1"
 fix_version = "1.5.0"
 authors = ["pt9999"]
 license = "MIT"
@@ -36,17 +36,17 @@ git = { url = "https://github.com/tttmmmyyyy/fixlang-hashmap.git" }
 
 [[dependencies]]
 name = "asynctask"
-version = "1.1.5"
+version = "2.0.0"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-asynctask.git" }
 
 [[dependencies]]
 name = "minilib-io"
-version = "0.8.5"
+version = "0.9.0"
 # path = "../fixlang-minilib-io"
 git = { url = "https://github.com/pt9999/fixlang-minilib-io.git" }
 
 [[dependencies]]
 name = "minilib-xml"
-version = "0.6.4"
+version = "0.7.0"
 # path = "../fixlang-minilib-xml"
 git = { url = "https://github.com/pt9999/fixlang-minilib-xml.git" }
