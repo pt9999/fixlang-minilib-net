@@ -19,6 +19,7 @@ objects = ["lib.o"]
 preliminary_commands = [["make", "lib.o"]]
 
 [build.test]
+threaded = true
 opt_level = "basic"
 files = [
     "tests/test.fix",
