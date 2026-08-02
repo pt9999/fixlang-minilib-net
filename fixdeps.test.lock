@@ -2,12 +2,12 @@ proj_file_hash = "7e6f59ffa42c80eb94cc7e5433621d71"
 
 [[dependencies]]
 name = "asynctask"
-version = "2.0.0"
-path = ".fixlang/deps/asynctask_2.0.0"
+version = "2.0.1"
+path = ".fixlang/deps/asynctask_2.0.1"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-asynctask.git"
-rev = "9f3f6fb70c5c41719ac37251ef5b68d6b94854d7"
+rev = "2f3a8ab7254ffeb50372e588ac6f188cd14aaf4b"
 
 [[dependencies]]
 name = "character"
@@ -56,12 +56,12 @@ rev = "f29b872b8eca13fc5f30abfac94b4ef3a9a590d7"
 
 [[dependencies]]
 name = "minilib-io"
-version = "0.9.0"
-path = ".fixlang/deps/minilib-io_0.9.0"
+version = "0.9.1"
+path = ".fixlang/deps/minilib-io_0.9.1"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-io.git"
-rev = "9a65dbf7b2f24caef8ba6f4ea4ba5f42caf77bfe"
+rev = "f9e1fceb66fc41fd97342ef4a843d194cdff28ff"
 
 [[dependencies]]
 name = "minilib-text"
