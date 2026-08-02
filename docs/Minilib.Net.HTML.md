@@ -1,6 +1,6 @@
 # Minilib.Net.HTML
 
-Defined in minilib-net@0.8.0
+Defined in minilib-net@0.8.1
 
 Simple HTML DOM model, as well as escaping/unescaping HTML special characters.
 
