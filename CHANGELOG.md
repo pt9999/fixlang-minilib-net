@@ -1,3 +1,8 @@
+## 0.8.2
+### Changed
+- Added indirect dependencies.
+- Upgraded to minilib-io@0.9.2, minilib-xml@0.7.1, hashmap@2.1.0, asynctask@2.0.1.
+
 ## 0.8.1
 ### Changed
 - Merged PR#3 (thanks to tttmmmyyyy san).
