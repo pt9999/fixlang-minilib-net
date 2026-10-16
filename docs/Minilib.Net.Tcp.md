@@ -1,6 +1,6 @@
 # Minilib.Net.Tcp
 
-Defined in minilib-net@0.8.2
+Defined in minilib-net@0.9.0
 
 IPv4 TCP Socket operations.
 
@@ -41,6 +41,12 @@ for the socket may grow.
 
 ### namespace Minilib.Net.Tcp::BufferedSocket
 
+#### c_BUFSIZE
+
+Type: `Std::I64`
+
+The max size of the read buffer and the write buffer.
+
 #### flush
 
 Type: `Minilib.Net.Tcp::BufferedSocket -> Std::IO::IOFail Minilib.Net.Tcp::BufferedSocket`
@@ -59,7 +65,7 @@ Type: `Minilib.Net.Tcp::BufferedSocket -> Std::IO::IOFail (Std::String, Minilib.
 
 Reads out a line (ie. a string that ends with a newline) from the read buffer.
 When the read buffer does not contain a newline, it will read some bytes upto
-_BUFSIZE from the socket, and search for a newline again.
+c_BUFSIZE from the socket, and search for a newline again.
 When the connection is closed, the return value may or may not contain a newline.
 The next call of `read_line()` returns an empty string, which represents that the connection is closed.
 
@@ -68,7 +74,7 @@ The next call of `read_line()` returns an empty string, which represents that th
 Type: `Std::String -> Minilib.Net.Tcp::BufferedSocket -> Std::IO::IOFail Minilib.Net.Tcp::BufferedSocket`
 
 Writes a string to the write buffer. The contents of the write buffer is not sent
-until the size of the write buffer is equal to or greater than `_BUFSIZE`, or `flush()` is called.
+until the size of the write buffer is equal to or greater than `c_BUFSIZE`, or `flush()` is called.
 
 ### namespace Minilib.Net.Tcp::IpAddress
 

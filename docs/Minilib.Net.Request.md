@@ -1,6 +1,6 @@
 # Minilib.Net.Request
 
-Defined in minilib-net@0.8.2
+Defined in minilib-net@0.9.0
 
 HTTP request and response.
 - Parses HTTP request headers and query strings, POST data
@@ -8,6 +8,25 @@ HTTP request and response.
 - Writes response back to client
 
 ## Values
+
+### namespace Minilib.Net.Request
+
+#### c_CONTENT_TYPE_ALIASES
+
+Type: `HashMap::HashMap Std::String Std::String`
+
+The predefined hashmap which defines the Content-Type (MIME type) aliases.
+The key is an alias name, such as `"text"`.
+The value is the Content-Type, such as `"text/plain"`.
+
+#### c_STATUS_REASON
+
+Type: `HashMap::HashMap Std::I64 Std::String`
+
+The predefined hashmap which defines the HTTP status and reason-phrase.
+The key is the HTTP status, such as `404`.
+The value is the reason-phrase, such as `"Not Found"`.
+This mapping is based on RFC9110.
 
 ### namespace Minilib.Net.Request::Headers
 
@@ -66,7 +85,7 @@ Type: `Std::String -> Minilib.Net.Request::Response -> Minilib.Net.Request::Resp
 
 `response.content_type(type)` sets the `Content-Type` header.
 You can specify an alias for the content type (e.g. "text", "json").
-See the definition of `_CONTENT_TYPE_ALIASES` for a list of available aliases.
+See the definition of `c_CONTENT_TYPE_ALIASES` for a list of available aliases.
 
 #### end
 
