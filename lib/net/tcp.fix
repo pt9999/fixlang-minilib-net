@@ -414,27 +414,28 @@ type BufferedSocket = unbox struct {
 };
 
 namespace BufferedSocket {
-    _BUFSIZE: I64;
-    _BUFSIZE = 1024;
+    // The max size of the read buffer and the write buffer.
+    c_BUFSIZE: I64;
+    c_BUFSIZE = 1024;
 
     // Makes a `BufferedSocket` from a `Socket`.
     make: Socket -> BufferedSocket;
     make = |socket| (
         BufferedSocket {
             socket: socket,
-            write_buf: Array::empty(_BUFSIZE),
-            read_buf: Array::empty(_BUFSIZE),
+            write_buf: Array::empty(c_BUFSIZE),
+            read_buf: Array::empty(c_BUFSIZE),
             eof: false
         }
     );
 
     // Writes a string to the write buffer. The contents of the write buffer is not sent
-    // until the size of the write buffer is equal to or greater than `_BUFSIZE`, or `flush()` is called.
+    // until the size of the write buffer is equal to or greater than `c_BUFSIZE`, or `flush()` is called.
     write_str: String -> BufferedSocket -> IOFail BufferedSocket;
     write_str = |str, bufsock| (
         let bytes = str.get_bytes.pop_back;
         let bufsock = bufsock.mod_write_buf(|buf| buf.append(bytes));
-        if bufsock.@write_buf.@size < _BUFSIZE {
+        if bufsock.@write_buf.@size < c_BUFSIZE {
             pure $ bufsock
         };
         bufsock.flush
@@ -461,7 +462,7 @@ namespace BufferedSocket {
 
     // Reads out a line (ie. a string that ends with a newline) from the read buffer.
     // When the read buffer does not contain a newline, it will read some bytes upto
-    // _BUFSIZE from the socket, and search for a newline again.
+    // c_BUFSIZE from the socket, and search for a newline again.
     // When the connection is closed, the return value may or may not contain a newline.
     // The next call of `read_line()` returns an empty string, which represents that the connection is closed.
     read_line: BufferedSocket -> IOFail (String, BufferedSocket);
@@ -484,7 +485,7 @@ namespace BufferedSocket {
                 break_m $ (line, bufsock)
             };
             let socket = bufsock.@socket;
-            let bytes = *socket.recv(_BUFSIZE);
+            let bytes = *socket.recv(c_BUFSIZE);
             let bufsock = bufsock
                 .set_read_buf(read_buf.append(bytes))
                 .set_eof(bytes.@size == 0);

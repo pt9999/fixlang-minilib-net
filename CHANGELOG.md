@@ -4,6 +4,7 @@
   minilib-text@0.11.0, minilib-binary@0.8.0, minilib-io@0.10.0,
   minilib-xml@0.8.0.
 - Minilib.Net.Request: Changed `_STATUS_REASON` to `c_STATUS_REASON`, and `_CONTENT_TYPE_ALIASES` to `c_CONTENT_TYPE_ALIASES`. Refined their document comments as well.
+- Minilib.Net.Tcp: Changed `_BUFSIZE` to `c_BUFSIZE`. Refined its document comment as well.
 
 ## 0.8.2
 ### Changed
