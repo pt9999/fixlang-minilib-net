@@ -229,20 +229,20 @@ namespace Response {
     // It will also set the reason phrase (eg. "Not Found") of the status.
     status: I64 -> Response -> Response;
     status = |status, res| (
-        let reason = _STATUS_REASON.find_or(status, "");
+        let reason = c_STATUS_REASON.find_or(status, "");
         res.set_status(status).set_reason(reason)
     );
 
     // `response.content_type(type)` sets the `Content-Type` header.
     // You can specify an alias for the content type (e.g. "text", "json").
-    // See the definition of `_CONTENT_TYPE_ALIASES` for a list of available aliases.
+    // See the definition of `c_CONTENT_TYPE_ALIASES` for a list of available aliases.
     content_type: String -> Response -> Response;
     content_type = |type_, res| (
         let content_type = (
             if (type_.find("/", 0).is_some) {
                 type_
             } else {
-                _CONTENT_TYPE_ALIASES.find(type_).map_or(type_, |t|t)
+                c_CONTENT_TYPE_ALIASES.find(type_).map_or(type_, |t|t)
             }
         );
         res.header("Content-Type", content_type)
@@ -301,10 +301,12 @@ namespace Response {
     );
 }
 
-// RFC9110
-// HTTP status and reason-phrase
-_STATUS_REASON: HashMap I64 String;
-_STATUS_REASON = (
+// The predefined hashmap which defines the HTTP status and reason-phrase.
+// The key is the HTTP status, such as `404`.
+// The value is the reason-phrase, such as `"Not Found"`.
+// This mapping is based on RFC9110.
+c_STATUS_REASON: HashMap I64 String;
+c_STATUS_REASON = (
     HashMap::empty(44)
     .insert(100, "Continue")
     .insert(101, "Switching Protocols")
@@ -352,9 +354,11 @@ _STATUS_REASON = (
     .insert(505, "HTTP Version Not Supported")
 );
 
-// Content-Type (MIME type) aliases
-_CONTENT_TYPE_ALIASES: HashMap String String;
-_CONTENT_TYPE_ALIASES = (
+// The predefined hashmap which defines the Content-Type (MIME type) aliases.
+// The key is an alias name, such as `"text"`.
+// The value is the Content-Type, such as `"text/plain"`.
+c_CONTENT_TYPE_ALIASES: HashMap String String;
+c_CONTENT_TYPE_ALIASES = (
     HashMap::empty(10)
     .insert("text", "text/plain")
     .insert("html", "text/html")
@@ -365,5 +369,4 @@ _CONTENT_TYPE_ALIASES = (
     .insert("png", "image/png")
     .insert("jpeg", "image/jpeg")   // not found in IANA registry
     .insert("form-data", "multipart/form-data")
-
 );
