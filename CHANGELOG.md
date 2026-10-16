@@ -1,3 +1,9 @@
+## 0.9.0
+### Changed
+- fixproj.toml: Bumped `fix_version` to 1.6.0. Depends on minilib-common@0.15.0,
+  minilib-text@0.11.0, minilib-binary@0.8.0, minilib-io@0.10.0,
+  minilib-xml@0.8.0.
+
 ## 0.8.2
 ### Changed
 - Added indirect dependencies.
