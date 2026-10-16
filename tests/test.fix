@@ -1,12 +1,12 @@
 module Test;
 
-import Minilib.Testing.UnitTest;
-
-import HtmlTest;
-import RequestTest;
-import RouterTest;
-import TcpTest;
-import UrlTest;
+import HtmlTest::main;
+import Minilib.Testing.UnitTest::{TestSuite, TestSuite::run};
+import RequestTest::main;
+import RouterTest::main;
+import Std::IO;
+import TcpTest::main;
+import UrlTest::main;
 
 testsuite: TestSuite;
 testsuite = [

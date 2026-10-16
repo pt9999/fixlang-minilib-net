@@ -3,10 +3,13 @@
 // - Finds a request handler from path and method of the HTTP request
 module Minilib.Net.Router;
 
-import HashMap;
-
-import Minilib.Text.StringEx;
-import Minilib.Trait.Traversable;
+import HashMap::{@size, empty, find, insert, to_iter, HashMap};
+import Minilib.Trait.Traversable::foreach_m;
+import Std::{
+    Bool, IO, Option, String, ToString, IO::print, 
+    Iterator::{advance, filter, is_empty, map, to_dyn, DynIterator}, Monad::pure, 
+    Option::{as_some, map_or, some}, String::{@size, get_sub, join, split}, ToString::to_string
+};
 
 // `RouterEntry h` represents a map from method name to a request handler.
 // `h` is a type of request handler.

@@ -1,12 +1,12 @@
 // Simple HTML DOM model, as well as escaping/unescaping HTML special characters.
 module Minilib.Net.HTML;
 
-import Character;
-
-import Minilib.Encoding.Xml.XmlHelpers;
-import Minilib.Text.StringEx;
-import Minilib.Text.Unicode;
-import Minilib.Text.Hex;
+import Minilib.Encoding.Xml.XmlHelpers::{escape_special, unescape_special};
+import Std::{
+    Array, String, ToString, Array::{@size, empty, push_back, to_iter}, 
+    Iterator::{filter, fold, push_front, reverse, to_dyn, DynIterator, DynIterator::empty}, 
+    String::concat_iter
+};
 
 namespace HTML {
 

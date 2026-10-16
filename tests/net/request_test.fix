@@ -1,11 +1,18 @@
 module RequestTest;
 
-import AsyncTask;
-import HashMap;
-
-import Minilib.IO.FileSystem;
-import Minilib.Net.Request;
-import Minilib.Testing.UnitTest;
+import AsyncTask::AsyncIOTask::{get, make, IOTask};
+import Minilib.IO.FileSystem::open_pipe;
+import Minilib.Net.Request::{
+    Request, Response, Headers::find, 
+    Request::{@headers, @http_version, @method, @remote_addr, @request_target, parse, set_connection}, 
+    Response::{content_type, end, make, status, write_str}
+};
+import Minilib.Testing.UnitTest::{assert_equal, make_test, run_test_driver, TestCase, TestCase::empty};
+import Std::{
+    IO, String, 
+    IO::{close_file, eprintln, read_string, write_string, IOFail, IOHandle, IOFail::{lift, try}}, 
+    Monad::pure, Option::some
+};
 
 open_string_reader: String -> IOFail (IOHandle, IOTask ());
 open_string_reader = |str| (

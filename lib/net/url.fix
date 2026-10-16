@@ -1,10 +1,16 @@
 // URL and URI parsing
 module Minilib.Net.URL;
 
-import Character;
-
-import Minilib.Text.StringEx;
-import Minilib.Text.Hex;
+import Character::to_upper;
+import Minilib.Text.Hex::{decode_hex_char, encode_hex_char};
+import Minilib.Text.StringEx::{from_array, split_first};
+import Std::{
+    loop_m, Array, Eq, ErrMsg, I64, Result, String, ToString, U8, 
+    Array::{@, @size, empty, fill, pop_back, push_back, set, to_iter}, FromString::from_string, 
+    Iterator::{fold, range}, LoopState::{break_m, continue_m}, Option::is_some, 
+    Result::{err, is_err, ok}, String::{find, get_bytes}, ToI64::i64, 
+    U8::{bit_and, bit_or, shift_left, shift_right}
+};
 
 // A structure that represents an URL.
 type URL = unbox struct {

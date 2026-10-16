@@ -1,9 +1,8 @@
 module RouterTest;
 
-import HashMap;
-
-import Minilib.Net.Router;
-import Minilib.Testing.UnitTest;
+import Minilib.Net.Router::{Router, Router::{empty, find, insert}};
+import Minilib.Testing.UnitTest::{assert_equal, make_table_test, run_test_driver, TestCase, TestCase::empty};
+import Std::{IO, String, Option::{none, some}};
 
 create_simple_router: () -> Router String;
 create_simple_router = |_| (

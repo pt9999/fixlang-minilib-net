@@ -1,7 +1,8 @@
 module HtmlTest;
 
-import Minilib.Net.HTML;
-import Minilib.Testing.UnitTest;
+import Minilib.Net.HTML::{HTML::{body, div_, p}, HTMLElement::{add, attr, text, to_html}};
+import Minilib.Testing.UnitTest::{assert_equal, make_table_test, run_test_driver, TestCase, TestCase::empty};
+import Std::IO;
 
 test_element_to_html: TestCase;
 test_element_to_html = (

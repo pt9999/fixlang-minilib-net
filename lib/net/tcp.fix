@@ -11,9 +11,22 @@
 //
 module Minilib.Net.Tcp;
 
-import Minilib.Common.Assert;
-import Minilib.IO.Errno;
-import Minilib.Text.StringEx;
+import Minilib.Common.Assert::assert_lazy;
+import Minilib.IO.Errno::get_last_error;
+import Std::{
+    loop_m, Array, Bool, ErrMsg, FromString, I64, IO, Ptr, Result, String, ToString, U16, U32, U8, 
+    Array::{
+        @, @size, append, borrow_elements_io, empty, fill, find_by, get_sub, mutate_elements_io, pop_back, 
+        push_back, set
+    }, 
+    FFI::{clear_errno, CInt, Destructor, Destructor::{borrow, borrow_io, make}}, FromString::from_string, 
+    IO::{@runner, eprintln, from_runner, IOFail, IOFail::{from_result, lift, throw}}, Iterator::to_array, 
+    LoopState::{break_m, continue_m}, Monad::{pure, when}, Option::{as_some, is_some}, 
+    Result::{as_err, as_ok, err, is_err, is_ok, ok}, 
+    String::{_unsafe_from_c_str, borrow_c_str_io, get_bytes, split}, ToCInt::c_int, ToCSizeT::c_size_t, 
+    ToI64::i64, ToString::to_string, ToU32::u32, ToU64::u64, ToU8::u8, 
+    U32::{bit_or, shift_left, shift_right}
+};
 
 // This type represents IPv4 ip address,
 // eg. 127.0.0.1, 192.168.0.1 etc.

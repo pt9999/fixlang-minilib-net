@@ -1,11 +1,16 @@
 module TcpTest;
 
-import AsyncTask;
-
-import Minilib.Net.Tcp;
-import Minilib.Trait.Traversable;
-import Minilib.Text.StringEx;
-import Minilib.Testing.UnitTest;
+import AsyncTask::{AsyncIOTask::{get, make, IOTask}, Var::{get, make, set, wait}};
+import Minilib.Net.Tcp::{
+    connect_to_tcp_server, listen_tcp_server, BufferedSocket::{flush, make, read_line, write_str}, 
+    IpAddress::resolve, Socket::accept
+};
+import Minilib.Testing.UnitTest::{assert_equal, make_table_test, make_test, run_test_driver, TestCase, TestCase::empty};
+import Minilib.Trait.Traversable::map_m;
+import Std::{
+    Array, ErrMsg, IO, Result, Functor::map, 
+    IO::{IOFail, IOFail::{from_io_result, lift, throw, to_result, try}}, Monad::pure, Result::{err, ok}
+};
 
 test_server_client: TestCase;
 test_server_client = (

@@ -4,13 +4,23 @@
 // - Writes response back to client
 module Minilib.Net.Request;
 
-import HashMap;
-
-import Minilib.Common.IOEx;
-import Minilib.IO.FileSystem;
-import Minilib.Net.URL;
-import Minilib.Text.StringEx;
-import Minilib.Trait.Traversable;
+import HashMap::{empty, find, find_or, insert, HashMap};
+import Minilib.Common.IOEx::fflush;
+import Minilib.Net.URL::URI::decodeURIComponent;
+import Minilib.Text.StringEx::{from_array, split_first, to_lower};
+import Minilib.Trait.Traversable::foreach_m;
+import Std::{
+    loop_m, Array, Bool, ErrMsg, I64, Option, Result, String, ToString, U8, 
+    Array::{@, @size, empty, push_back, to_iter}, FromString::from_string, Functor::map, 
+    IO::{read_line, read_n_bytes, write_bytes, write_string, IOFail, IOHandle, IOFail::from_result}, 
+    Iterator::{
+        filter, fold_m, get_first, loop_iter, map, push_front, reverse, to_array, to_dyn, DynIterator, 
+        DynIterator::empty
+    }, 
+    LoopState::{break, break_m, continue, continue_m}, Monad::pure, 
+    Option::{is_some, map_or, none, some}, Result::{err, ok}, 
+    String::{find, join, split, strip_last_newlines, strip_spaces}, ToString::to_string
+};
 
 //------------------------------------------------------------------------------------
 
