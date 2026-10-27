@@ -16,7 +16,7 @@ files = [
     "lib/net/url.fix",
 ]
 objects = ["lib.o"]
-preliminary_commands = [["make", "lib.o"]]
+preliminary_commands = [["make", "-s", "lib.o", "CFLAGS=-Wall"]]
 
 [build.test]
 threaded = true

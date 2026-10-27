@@ -1,3 +1,7 @@
+## 0.9.1
+### Changed
+- Added `-s` option and `CFLAGS=-Wall` option to the `make` command that builds `lib.o`.
+
 ## 0.9.0
 ### Changed
 - fixproj.toml: Bumped `fix_version` to 1.6.0. Depends on minilib-common@0.15.0,
