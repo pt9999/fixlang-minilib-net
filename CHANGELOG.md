@@ -1,6 +1,7 @@
 ## 0.9.2
 ### Changed
 - Fixed the parts in `lib.c` that were triggering warnings.
+- Depends on minilib-common@0.15.2.
 
 ## 0.9.1
 ### Changed
