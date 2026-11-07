@@ -29,11 +29,11 @@ int minilib_net_resolve_ipaddress_v4(const char* hostname, uint8_t *out_addr, si
         return err;
     }
     if (result != NULL) {
-        int h_length = result->h_length;
+        //int h_length = result->h_length;
         char** h_addr_list = result->h_addr_list;
         //printf("h_length=%d h_addr_list=%p\n", h_length, h_addr_list);
         for (size_t i = 0; h_addr_list[i] != NULL; i++) {
-            uint8_t* addr = h_addr_list[i];
+            uint8_t* addr = (uint8_t*) h_addr_list[i];
             //printf("h_addr[%lu]=%d.%d.%d.%d\n", i, addr[0], addr[1], addr[2], addr[3]);
             if (addr_size + 3 < max_addr_size) {
                 out_addr[addr_size++] = addr[0];
@@ -83,11 +83,13 @@ uint16_t minilib_net_sockaddr_in_get_port(struct sockaddr_in* sin)
     return ntohs(sin->sin_port);
 }
 
+/*
 static void _debug_sockaddr_in(const char* label, struct sockaddr* sa)
 {
     struct sockaddr_in* sin = (struct sockaddr_in*) sa;
     fprintf(stderr, "%s: addr=%u port=%d\n", label, ntohl(sin->sin_addr.s_addr), ntohs(sin->sin_port));
 }
+*/
 
 //--------------------------------------------------------
 

@@ -1,3 +1,7 @@
+## 0.9.2
+### Changed
+- Fixed the parts in `lib.c` that were triggering warnings.
+
 ## 0.9.1
 ### Changed
 - Added `-s` option and `CFLAGS=-Wall` option to the `make` command that builds `lib.o`.
