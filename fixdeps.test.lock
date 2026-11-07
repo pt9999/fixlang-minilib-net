@@ -1,4 +1,4 @@
-proj_file_hash = "9b3929879bbcd144e06d7bda752df26b"
+proj_file_hash = "7b520cc0251ea8e75fb64c76c101bef5"
 
 [[dependencies]]
 name = "asynctask"
